@@ -4,7 +4,6 @@ A reimplementation of TensorMol in Jax
 """
 
 # Add imports here
-from .tensormol_jax import *
 
 # Handle versioneer
 from ._version import get_versions
