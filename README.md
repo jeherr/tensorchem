@@ -1,8 +1,8 @@
 TensorMol-Jax
 ==============================
 [//]: # (Badges)
-[![Travis Build Status](https://travis-ci.com/REPLACE_WITH_OWNER_ACCOUNT/TensorMol-Jax.svg?branch=master)](https://travis-ci.com/REPLACE_WITH_OWNER_ACCOUNT/TensorMol-Jax)
-[![codecov](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/TensorMol-Jax/branch/master/graph/badge.svg)](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/TensorMol-Jax/branch/master)
+[![Travis Build Status](https://travis-ci.com/jeherr/tensormol-jax.svg?branch=master)](https://travis-ci.com/jeherr/tensormol-jax)
+[![codecov](https://codecov.io/gh/jeherr/tensormol-jax/branch/master/graph/badge.svg)](https://codecov.io/gh/jeherr/tensormol-jax/branch/master)
 
 A reimplementation of TensorMol in Jax
 
