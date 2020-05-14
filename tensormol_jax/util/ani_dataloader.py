@@ -52,7 +52,7 @@ name_dict = {
     'wb97x_tz.energy':"total_tz_energy",
     'ccsd(t)_cbs.energy':"total_cbs_energy",
     'hf_dz.energy':"hf_dz_energy",
-   	'hf_tz.energy':"hf_tz_energy",
+    'hf_tz.energy':"hf_tz_energy",
     'hf_qz.energy':"hf_qz_energy",
     'npno_ccsd(t)_dz.corr_energy':"npno_dz_energy",
     'npno_ccsd(t)_tz.corr_energy':"npno_tz_energy",
