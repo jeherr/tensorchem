@@ -17,7 +17,9 @@ class Dataset(TorchDataset):
 
     def save(self, filename=None):
         # Will do some stuff to collect all necessary data into a format for JSON
-        json_data = None
+        json_data = {
+	   "unique_atoms":self.unique_atoms
+	}
         with open(filename, "w") as f:
             json.dump(json_data, f)
 
