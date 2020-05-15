@@ -46,8 +46,8 @@ json_data = []
 molecule_dict = {}
 
 name_dict = {
-    'coordinates':"atomic_positions",
-    'atomic_numbers':"atomic_numbers",
+    'coordinates':"geometries",
+    'atomic_numbers':"atomic_nums",
     'wb97x_dz.energy':"total_dz_energy",
     'wb97x_tz.energy':"total_tz_energy",
     'ccsd(t)_cbs.energy':"total_cbs_energy",
@@ -80,8 +80,8 @@ for data in iter_data_buckets(path_to_h5file, keys=data_keys):
     X = data['coordinates']
     Y = data['atomic_numbers']
     molecule_dict.update({
-        "atomic_positions":X.tolist(),
-        "atomic_numbers":Y.tolist()
+        "geometries":X.tolist(),
+        "atomic_nums":Y.tolist()
     }) 
     for key in data_keys:
         if (key == 'coordinates') or (key == 'atomic_positions'):
@@ -91,6 +91,6 @@ for data in iter_data_buckets(path_to_h5file, keys=data_keys):
         }) 
     json_data.append(molecule_dict)
 
-with open('/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-release.json', 'w') as outfile:
+with open('../data/ani1x-release.json', 'w') as outfile:
     json.dump(json_data, outfile, ensure_ascii=False)
 
