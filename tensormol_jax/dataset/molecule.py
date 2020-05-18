@@ -6,7 +6,7 @@ and their properties (energy, atomic forces, dipole moments).
 
 import json
 import torch
-
+import numpy as np
 
 class MoleculeSet():
     def __init__(self):
@@ -14,7 +14,9 @@ class MoleculeSet():
         self.atomic_nums = ()
         self.geometries = []
         self.identifiers = {}
+        self.properties = {}
         self.min_geom = None
+        self.filename = None
 
     def __len__(self):
         return len(self.geometries)
@@ -26,12 +28,17 @@ class MoleculeSet():
         return self.geometries[idx]
 
     def save(self, filename=None):
-	# Will do some stuff to collect all necessary data into a format for JSON
-        if (filename == None):
-            filename = self.filename
+        if filename is None:
+            if self.filename is None:
+                # TODO This should be implemented as an error
+                print("No filename given for saving")
+                exit(0)
+            else:
+                filename = self.filename
+        print(type(self.atomic_nums))
         json_data = {
             "atomic_number": self.atomic_nums,
-            "coordinates": [geom.coords for geom in self.geometries],
+            "coordinates": [geom.coords.tolist() for geom in self.geometries],
             "properties": [geom.properties for geom in self.geometries],
             "identifiers": self.identifiers
         }
@@ -39,12 +46,16 @@ class MoleculeSet():
             json.dump(json_data, f)
 
     def load(self, filename=None):
-        self.filename = filename
+        if filename is None:
+            try:
+                filename = self.filename
+            except:
+                "No file specified for Molecule Set loading."
         with open(filename) as f:
             json_data = json.load(f)[0]
         self.atomic_nums = json_data['atomic_nums']
         self.geometries = [Geometry(geom) for geom in json_data['geometries']]
-        self.identifiers = {"identifiers": json_data['identifiers']}
+        # self.identifiers = {"identifiers": json_data['identifiers']}
 
 
 class Geometry:
