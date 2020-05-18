@@ -9,7 +9,7 @@ import numpy as np
 import json
 import sys
 
-from ..dataset.molecule import MoleculeSet, Geometry
+from tensormol_jax.dataset.molecule import MoleculeSet, Geometry
 
 
 def iter_data_buckets(h5filename, keys):
@@ -83,12 +83,26 @@ def load_ani1x(path_to_h5file, data_keys=[]):
             g = Geometry(coords)
             g.properties = {key: data[key][i].tolist() for key in prop_keys}
             mset.geometries.append(g)
+        #mset.save(filename='/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-mol.mset')
+        #exit(0)
         msets.append(mset)
-    # with open('../data/ani1x-release.json', 'w') as outfile:
-    #    json.dump(json_data, outfile, ensure_ascii=False)
+    return msets
 
 
 if __name__ == "__main__":
-    path_to_h5file = '/Users/johnherr/tensormol-jax/tensormol_jax/data/ani1x-release.h5'
+    path_to_h5file = '/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-release.h5'
     data_keys = ['wb97x_tz.energy', 'wb97x_tz.forces']
-    json_data = load_ani1x(path_to_h5file, data_keys)
+    msets = load_ani1x(path_to_h5file, data_keys)
+    for mset in msets:
+        mset.save('../data/ani1x-temp.mset')
+        with open('../data/ani1x-temp.mset', "r") as f:
+            mol_data = f.read()
+        with open('../data/ani1x.mset', "a") as x:
+            x.write(mol_data + "\n")
+
+
+
+
+
+
+
