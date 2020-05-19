@@ -35,7 +35,6 @@ class MoleculeSet():
                 exit(0)
             else:
                 filename = self.filename
-        print(type(self.atomic_nums))
         json_data = {
             "atomic_number": self.atomic_nums,
             "coordinates": [geom.coords.tolist() for geom in self.geometries],
@@ -50,12 +49,12 @@ class MoleculeSet():
             try:
                 filename = self.filename
             except:
-                "No file specified for Molecule Set loading."
+                print("No file specified for Molecule Set loading.")
         with open(filename) as f:
-            json_data = json.load(f)[0]
-        self.atomic_nums = json_data['atomic_nums']
-        self.geometries = [Geometry(geom) for geom in json_data['geometries']]
-        # self.identifiers = {"identifiers": json_data['identifiers']}
+            json_data = json.load(f)
+        self.atomic_nums = json_data['atomic_number']
+        self.geometries = [Geometry(np.array(coords), json_data['properties']) for coords in json_data['coordinates']]
+        self.identifiers = {"identifiers": json_data['identifiers']}
 
 
 class Geometry:
@@ -69,5 +68,5 @@ class Geometry:
 
 if __name__ == "__main__":
     mol1 = MoleculeSet()
-    mol1.load('../data/ani1x-release.json')
-    mol1.save('../data/mol_test_save.json')
+    mol1.load('../data/ani1x-mol.mset')
+    mol1.save('../data/ani1x-mol-saved.mset')

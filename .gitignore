@@ -102,4 +102,5 @@ ENV/
 .mypy_cache/
 
 # h5py files
-.h5
+*.h5
+*.json
