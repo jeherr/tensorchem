@@ -38,11 +38,15 @@ class MoleculeSet():
         json_data = {
             "atomic_number": self.atomic_nums,
             "coordinates": [geom.coords.tolist() for geom in self.geometries],
-            "properties": [geom.properties for geom in self.geometries],
+            "properties": self.geometries[0].properties,
             "identifiers": self.identifiers
         }
         with open(filename, 'w') as f:
+            f.write("[")
+        with open(filename, 'a') as f:
             json.dump(json_data, f)
+        with open(filename, 'a') as f:
+            f.write("]")
 
     def load(self, filename=None):
         if filename is None:
@@ -53,7 +57,7 @@ class MoleculeSet():
         with open(filename) as f:
             json_data = json.load(f)
         self.atomic_nums = json_data['atomic_number']
-        self.geometries = [Geometry(np.array(coords), json_data['properties']) for coords in json_data['coordinates']]
+        self.geometries = [Geometry(np.array(coords), {key: value for key, value in json_data['properties'].items()}) for coords in json_data['coordinates']]
         self.identifiers = {"identifiers": json_data['identifiers']}
 
 
@@ -69,4 +73,3 @@ class Geometry:
 if __name__ == "__main__":
     mol1 = MoleculeSet()
     mol1.load('../data/ani1x-mol.mset')
-    mol1.save('../data/ani1x-mol-saved.mset')

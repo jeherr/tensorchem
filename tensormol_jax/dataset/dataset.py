@@ -107,21 +107,25 @@ class MixedDataset(Dataset):
                 filename = self.filename
             except:
                 print("No file specified for Dataset loading.")
-        with open(filename, 'r') as f:
-            for line in f:
-                mset = json.loads(line)
-                for i, coords in enumerate(mset['coordinates']):
-                    sample = {
-                        "atomic_number": mset['atomic_number'],
-                        "coordinates": np.array(coords)     
-                    }
-                    for key, value in mset['properties'][i].items():
-                        sample.update({key: value})
-                    self.samples.append(sample)
+        with open(filename, "r") as f:
+            json_data = json.loads(f.read())
+        for data in json_data:
+            sample = {}
+            for key, value in data.items():
+                if type(value) == list:
+                    sample.update({key: value})
+                elif type(value) == dict:
+                    for k, v in value.items():
+                        sample.update({k: v})
+            for key, value in sample.items():
+                if key == "coordinates":
+                    for data in value:
+                        sample.update({key: np.array(data)})
+                        self.samples.append(sample)
 
 
 if __name__ == "__main__":
     ds1 = MixedDataset()
     ds1.load('/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-mol.mset')
     ds1.save('../data/ani1x-update.mset')
-   # print(ds1.__getitem__(0))
+    print(ds1.__len__())
