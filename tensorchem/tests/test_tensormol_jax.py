@@ -1,12 +1,12 @@
 """
-Unit and regression test for the tensormol_jax package.
+Unit and regression test for the tensorchem package.
 """
 
 # Import package, test suite, and other packages as needed
-import tensormol_jax
+import tensorchem
 import pytest
 import sys
 
-def test_tensormol_jax_imported():
+def test_tensorchem_imported():
     """Sample test, will always pass so long as import statement worked"""
-    assert "tensormol_jax" in sys.modules
+    assert "tensorchem" in sys.modules

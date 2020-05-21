@@ -1,5 +1,5 @@
 """
-TensorMol is a Neural Network force field based on the High-Dimensional Neural Network Potential model developed
+tensorchem is a Neural Network force field based on the High-Dimensional Neural Network Potential model developed
 by Behler and Parrinello.
 """
 
@@ -8,9 +8,9 @@ import torch.nn as nn
 import torch.optim as opt
 
 
-class TensorMolTrainer(nn.Module):
+class TensorChemTrainer(nn.Module):
     """
-    Trainer for TensorMol networks. Coordinates the featurization of data to feed into TensorMol, recovers the latent
+    Trainer for TensorChem networks. Coordinates the featurization of data to feed into TensorChem, recovers the latent
     featurization after the final non-linear layer to feed to linear regression layers for final label prediction.
     """
 
@@ -19,7 +19,7 @@ class TensorMolTrainer(nn.Module):
         cuda_condition = torch.cuda.is_available()
         self.device = torch.device("cuda" if cuda_condition else "cpu")
         self.featurization = None  # TODO Need featurization modules implemented
-        self.model = TensorMol(elements, layers, input_size)
+        self.model = TensorChem(elements, layers, input_size)
         self.model.to(self.device)
         self.learn_rate = hyper_params['learning_rate']
         self.betas = hyper_params['betas']
@@ -29,7 +29,7 @@ class TensorMolTrainer(nn.Module):
         return
 
 
-class TensorMol(nn.Module):
+class TensorChem(nn.Module):
     """
     The network class which contains the necessary submodules
 

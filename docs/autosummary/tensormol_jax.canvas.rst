@@ -1,6 +1,6 @@
-tensormol\_jax.canvas
+tensorchem.canvas
 =====================
 
-.. currentmodule:: tensormol_jax
+.. currentmodule:: tensorchem
 
 .. autofunction:: canvas

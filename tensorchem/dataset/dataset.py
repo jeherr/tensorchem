@@ -4,11 +4,13 @@ and their properties (energy, atomic forces, dipole moments) for training models
 """
 
 import json
-import numpy as np 
+
+import numpy as np
 import torch
 
 from torch.utils.data import Dataset as TorchDataset
-from tensormol_jax.dataset.molecule import MoleculeSet, Geometry
+from tensorchem.dataset.molecule import MoleculeSet, Geometry
+
 
 class Dataset(TorchDataset):
     def __init__(self):
@@ -23,11 +25,11 @@ class Dataset(TorchDataset):
 class MolDataset(Dataset):
     def __init__(self):
         super(MolDataset, self).__init__()
-        self.molecules = () # Immutable type so order of molecules cannot change during training
-        self.idx_map = {} # Maps an overall sample index to the molecule and geometry indices
+        self.samples = ()  # Immutable type so order of molecules cannot change during training
+        self.idx_map = {}  # Maps an overall sample index to the molecule and geometry indices
 
     def __len__(self):
-        return sum([len(molecule_set) for molecule_set in self.molecules])
+        return sum([len(molecule_set) for molecule_set in self.samples])
 
     def __getitem__(self, idx):
         return
@@ -49,10 +51,10 @@ class MolDataset(Dataset):
 
     def load(self, filename=None):
         if filename is None:
-            try:
+            if self.filename is None:
+                raise FileNotFoundError("No filename given for loading")
+            else:
                 filename = self.filename
-            except:
-                print("No file specified for Dataset loading.")
         with open(filename, 'r') as f:
             for line in f:
                 mset = json.loads(line)
@@ -102,10 +104,10 @@ class MixedDataset(Dataset):
 
     def load(self, filename=None):
         if filename is None:
-            try:
+            if self.filename is None:
+                raise FileNotFoundError("No filename given for loading")
+            else:
                 filename = self.filename
-            except:
-                print("No file specified for Dataset loading.")
         with open(filename, "r") as f:
             json_data = json.loads(f.read())
         if type(json_data) is not list:
@@ -131,11 +133,25 @@ class MixedDataset(Dataset):
         mixed_data = cls()
         for mset in msets:
             for geom in mset.geometries:
-                sample = {"atomic_number": mset.atomic_nums, "coordinates": geom.coords.tolist()}
+                sample = {"atomic_numbers": mset.atomic_nums, "coordinates": geom.coords}
                 sample.update({key: value for key, value in geom.properties.items()})
-                sample.update({key: value for key, value in mset.identifiers.items()})
                 mixed_data.samples.append(sample)
         return mixed_data
+
+
+class Sample:
+    def __init__(self, atomic_nums, coords, labels):
+        self.atomic_nums = torch.tensor(atomic_nums, dtype=torch.uint8)
+        self.coords = torch.tensor(coords, dtype=torch.float32)
+        self.labels = {}
+        for key, value in labels.items():
+            if type(value) == np.ndarray:
+                self.labels.update({key: torch.from_numpy(value)})
+            elif type(value) == float:
+                self.labels.update({key: torch.FloatTensor([value])})
+            else:
+                self.labels.update({key: torch.FloatTensor(value)})
+
 
 
 if __name__ == "__main__":

@@ -17,12 +17,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'TensorMol-Jax'
-copyright = '2020, Alexis'
-author = 'Alexis'
+project = 'TensorChem'
+copyright = '2020, John'
+author = 'John'
 
 # The full version, including alpha/beta/rc tags
-release = 'tensormol_jax'
+release = 'tensorchem'
 
 
 # -- General configuration ---------------------------------------------------

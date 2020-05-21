@@ -1,9 +1,9 @@
-.. TensorMol-Jax documentation master file, created by
+.. tensorchem documentation master file, created by
    sphinx-quickstart on Mon May 11 23:01:09 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to TensorMol-Jax's documentation!
+Welcome to TensorChem's documentation!
 =========================================
 
 .. toctree::

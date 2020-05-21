@@ -1,6 +1,5 @@
 """
-TensorMol-Jax
-A reimplementation of TensorMol in Jax
+TensorChem
 """
 import sys
 from setuptools import setup, find_packages
@@ -21,7 +20,7 @@ except:
 
 setup(
     # Self-descriptive entries which should always be present
-    name='tensormol_jax',
+    name='tensorchem',
     author='John E. Herr',
     author_email='johnherr@gmail.com',
     description=short_description[0],
@@ -44,7 +43,7 @@ setup(
     # Allows `setup.py test` to work correctly with pytest
     setup_requires=[] + pytest_runner, install_requires=['torch', 'numpy']
 
-	# Additional entries you may want simply uncomment the lines you want and fill in the data
+    # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
     # install_requires=[],              # Required packages, pulls from pip if needed; do not use for Conda deployment
     # platforms=['Linux',
