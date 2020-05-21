@@ -93,13 +93,16 @@ if __name__ == "__main__":
     path_to_h5file = '/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-release.h5'
     data_keys = ['wb97x_tz.energy', 'wb97x_tz.forces']
     msets = load_ani1x(path_to_h5file, data_keys)
+    with open('../data/ani1x.mset', "w") as x:
+        x.write("[")
     for mset in msets:
         mset.save('../data/ani1x-temp.mset')
         with open('../data/ani1x-temp.mset', "r") as f:
             mol_data = f.read()
         with open('../data/ani1x.mset', "a") as x:
-            x.write(mol_data + "\n")
-
+            x.write(mol_data + ",")
+    with open('../data/ani1x.mset', "a") as x:
+        x.write("]")
 
 
 
