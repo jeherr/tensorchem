@@ -32,7 +32,6 @@ before_install:
   - python -V
 
 install:
-
     # Create test environment for package
   - python devtools/scripts/create_conda_env.py -n=test -p=$PYTHON_VER devtools/conda-envs/test_env.yaml
     # Activate the test environment

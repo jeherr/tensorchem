@@ -29,9 +29,7 @@ class MoleculeSet():
     def save(self, filename=None):
         if filename is None:
             if self.filename is None:
-                # TODO This should be implemented as an error
-                print("No filename given for saving")
-                exit(0)
+                raise FileNotFoundError("No filename given for saving")
             else:
                 filename = self.filename
         json_data = {
@@ -51,9 +49,11 @@ class MoleculeSet():
                 print("No file specified for Molecule Set loading.")
         with open(filename) as f:
             json_data = json.load(f)
+        for key in json_data.keys():
+            if type(json_data[key]) == dict:
+                self.identifiers = {key: json_data[key]}
         self.atomic_nums = json_data['atomic_number']
         self.geometries = [Geometry(np.array(coords), {key: value for key, value in json_data['properties'].items()}) for coords in json_data['coordinates']]
-        self.identifiers = {"identifiers": json_data['identifiers']}
 
 
 class Geometry:
