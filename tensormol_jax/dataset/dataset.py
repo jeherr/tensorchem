@@ -85,8 +85,7 @@ class MixedDataset(Dataset):
     def save(self, filename=None):
         if filename is None:
             if self.filename is None:
-                print("No filename given for saving")
-                exit(0)
+                raise FileNotFoundError("No filename given for saving")
             else:
                 filename = self.filename
         json_data = []
@@ -123,9 +122,22 @@ class MixedDataset(Dataset):
                         sample.update({key: np.array(data)})
                         self.samples.append(sample)
 
+    @classmethod
+    def from_mset(cls, msets):
+        if type(msets) is MoleculeSet:
+            msets = [msets]
+        mixed_data = cls()
+        for mset in msets:
+            for geom in mset.geometries:
+                sample = {"atomic_number": mset.atomic_nums, "coordinates": geom.coords.tolist()}
+                sample.update({key: value for key, value in geom.properties.items()})
+                sample.update({key: value for key, value in mset.identifiers.items()})
+                mixed_data.samples.append(sample)
+        return mixed_data
+
 
 if __name__ == "__main__":
-    ds1 = MixedDataset()
-    ds1.load('/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-mol.mset')
-    ds1.save('../data/ani1x-update.mset')
+    mol1 = MoleculeSet()
+    mol1.load('../data/ani1x-mol.mset')
+    ds1 = MixedDataset.from_mset(mol1)
     print(ds1.__len__())

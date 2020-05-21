@@ -14,7 +14,6 @@ class MoleculeSet():
         self.atomic_nums = ()
         self.geometries = []
         self.identifiers = {}
-        self.properties = {}
         self.min_geom = None
         self.filename = None
 
@@ -38,15 +37,11 @@ class MoleculeSet():
         json_data = {
             "atomic_number": self.atomic_nums,
             "coordinates": [geom.coords.tolist() for geom in self.geometries],
-            "properties": self.geometries[0].properties,
-            "identifiers": self.identifiers
+            "properties": {key: value for prop in self.geometries for key, value in prop.properties.items()},
+            "identifiers": {key: value for iden in self.identifiers}
         }
         with open(filename, 'w') as f:
-            f.write("[")
-        with open(filename, 'a') as f:
             json.dump(json_data, f)
-        with open(filename, 'a') as f:
-            f.write("]")
 
     def load(self, filename=None):
         if filename is None:
