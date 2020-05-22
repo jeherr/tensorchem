@@ -4,12 +4,13 @@ dependencies:
     # Base depends
   - python
   - pip
-
+    # Scripts
+  - numpy
+  - pytorch
     # Testing
   - pytest
   - pytest-cov
   - codecov
-
     # Pip-only installs
   #- pip:
   #  - codecov

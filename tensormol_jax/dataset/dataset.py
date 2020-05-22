@@ -108,6 +108,8 @@ class MixedDataset(Dataset):
                 print("No file specified for Dataset loading.")
         with open(filename, "r") as f:
             json_data = json.loads(f.read())
+        if type(json_data) is not list:
+            json_data = [json_data]
         for data in json_data:
             sample = {}
             for key, value in data.items():
