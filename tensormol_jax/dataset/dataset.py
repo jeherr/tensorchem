@@ -19,6 +19,20 @@ class Dataset(TorchDataset):
     def _init_dataset(self):
         return
 
+    #TODO develop a more careful save and load routine for JSON data
+    def save(self, filename=None):
+        # Will do some stuff to collect all necessary data into a format for JSON
+        json_data = {
+            "unique_atoms": self.unique_atoms
+        }
+        with open(filename, "w") as f:
+            json.dump(json_data, f)
+
+    def load(self, filename=None):
+        with open(filename) as f:
+            json_data = json.load(f)
+        self.__dict__.update(json_data)
+
 
 class MolDataset(Dataset):
     def __init__(self):
@@ -140,6 +154,6 @@ class MixedDataset(Dataset):
 
 if __name__ == "__main__":
     mol1 = MoleculeSet()
-    mol1.load('../data/ani1x-mol.mset')
+    mol1.load('19021.mset')
     ds1 = MixedDataset.from_mset(mol1)
     print(ds1.__len__())
