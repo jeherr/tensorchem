@@ -41,7 +41,7 @@ install:
 
 
 script:
-  - pytest -v --cov=tensorchem tensorchem/tests/
+  - pytest -v --cov=tensorchem tests/
 
 notifications:
     email: false
