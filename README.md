@@ -1,10 +1,8 @@
 TensorChem
 ==============================
 [//]: # (Badges)
-[![Travis Build Status](https://travis-ci.com/jeherr/tensorchem.svg?branch=master)](https://travis-ci.com/jeherr
-/tensorchem)
-[![codecov](https://codecov.io/gh/jeherr/tensorchem/branch/master/graph/badge.svg)](https://codecov.io/gh/jeherr
-/tensorchem/branch/master)
+[![Travis Build Status](https://travis-ci.com/jeherr/tensorchem.svg?branch=master)](https://travis-ci.com/jeherr/tensorchem)
+[![codecov](https://codecov.io/gh/jeherr/tensorchem/branch/master/graph/badge.svg)](https://codecov.io/gh/jeherr/tensorchem/branch/master)
 
 TensorChem is a package for building non-equilibrium datasets and training neural network potential models.
 
