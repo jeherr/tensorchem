@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = tensormol_jax
+SPHINXPROJ    = tensorchem
 SOURCEDIR     = .
 BUILDDIR      = _build
 

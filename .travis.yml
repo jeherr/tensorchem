@@ -41,7 +41,7 @@ install:
 
 
 script:
-  - pytest -v --cov=tensormol_jax tensormol_jax/tests/
+  - pytest -v --cov=tensorchem tensorchem/tests/
 
 notifications:
     email: false
