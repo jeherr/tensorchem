@@ -40,7 +40,7 @@ class MoleculeSet:
         }
         with open(filename, 'w') as f:
             json.dump(json_data, f)
-
+    
     def load(self, filename=None):
         if filename is None:
             if self.filename is None:
@@ -86,4 +86,4 @@ class Geometry:
 
 if __name__ == "__main__":
     mol1 = MoleculeSet()
-    mol1.load('../data/ani1x-mol.mset')
+    mol1.load('19021.mset')

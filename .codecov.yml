@@ -3,8 +3,9 @@ coverage:
   status:
     patch: false
     project:
-      default:
-        threshold: 50%
+      default: false
+      tests:
+        target: 100%
 comment:
   layout: "header"
   require_changes: false
