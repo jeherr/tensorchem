@@ -6,8 +6,6 @@ functional theory properties for molecules. Sci Data 7, 134 (2020). https://doi.
 
 import h5py
 import numpy as np
-import json
-import sys
 
 from tensorchem.dataset.molecule import MoleculeSet, Geometry
 
