@@ -1,10 +1,12 @@
-TensorMol-Jax
+TensorChem
 ==============================
 [//]: # (Badges)
-[![Travis Build Status](https://travis-ci.com/jeherr/tensormol-jax.svg?branch=master)](https://travis-ci.com/jeherr/tensormol-jax)
-[![codecov](https://codecov.io/gh/jeherr/tensormol-jax/branch/master/graph/badge.svg)](https://codecov.io/gh/jeherr/tensormol-jax/branch/master)
+[![Travis Build Status](https://travis-ci.com/jeherr/tensorchem.svg?branch=master)](https://travis-ci.com/jeherr
+/tensorchem)
+[![codecov](https://codecov.io/gh/jeherr/tensorchem/branch/master/graph/badge.svg)](https://codecov.io/gh/jeherr
+/tensorchem/branch/master)
 
-A reimplementation of TensorMol in Jax
+TensorChem is a package for building non-equilibrium datasets and training neural network potential models.
 
 ### Copyright
 

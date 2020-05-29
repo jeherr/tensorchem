@@ -1,6 +1,6 @@
 """
-TensorMol-Jax
-A reimplementation of TensorMol in Jax
+TensorChem
+
 """
 
 # Add imports here

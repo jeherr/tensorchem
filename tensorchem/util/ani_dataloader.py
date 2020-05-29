@@ -9,7 +9,7 @@ import numpy as np
 import json
 import sys
 
-from tensormol_jax.dataset.molecule import MoleculeSet, Geometry
+from tensorchem.dataset.molecule import MoleculeSet, Geometry
 
 
 def iter_data_buckets(h5filename, keys):
@@ -68,9 +68,9 @@ name_dict = {
 
 def load_ani1x(path_to_h5file, data_keys=[]):
     # Example for extracting DFT/DZ energies and forces
-    msets = []
-    for data in iter_data_buckets(path_to_h5file, keys=data_keys):
+    for i, data in enumerate(iter_data_buckets(path_to_h5file, keys=data_keys)):
         mset = MoleculeSet()
+        mset.filename = "/Users/johnherr/tensorchem/tensorchem/data/ani1x-mol"+str(i)+".mset"
         prop_keys = []
         for key in data.keys():
             if key == 'atomic_numbers':
@@ -79,18 +79,16 @@ def load_ani1x(path_to_h5file, data_keys=[]):
                 continue
             else:
                 prop_keys.append(key)
-        for i, coords in enumerate(data['coordinates']):
-            g = Geometry(coords)
-            g.properties = {key: data[key][i].tolist() for key in prop_keys}
+        for j, coords in enumerate(data['coordinates']):
+            g = Geometry(mset.atomic_nums, coords)
+            g.properties = {key: data[key][j].tolist() for key in prop_keys}
             mset.geometries.append(g)
-        #mset.save(filename='/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-mol.mset')
-        #exit(0)
-        msets.append(mset)
-    return msets
+        mset.save()
+    return
 
 
 if __name__ == "__main__":
-    path_to_h5file = '/home/adriscoll/tensormol-jax/tensormol_jax/data/ani1x-release.h5'
+    path_to_h5file = '/Users/johnherr/tensorchem/tensorchem/data/ani1x-release.h5'
     data_keys = ['wb97x_tz.energy', 'wb97x_tz.forces']
     msets = load_ani1x(path_to_h5file, data_keys)
     with open('../data/ani1x.mset', "w") as x:

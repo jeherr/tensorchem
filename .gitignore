@@ -101,6 +101,8 @@ ENV/
 # mypy
 .mypy_cache/
 
-# h5py files
+# data files used for TensorChem
 *.h5
 *.json
+*.mset
+*.dset

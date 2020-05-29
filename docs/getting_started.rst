@@ -1,4 +1,4 @@
 Getting Started
 ===============
 
-This page details how to get started with TensorMol-Jax. 
+This page details how to get started with TensorChem.
