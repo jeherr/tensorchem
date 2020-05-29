@@ -3,13 +3,12 @@ Module for building features for model inputs from the molecular coordinates and
 """
 
 import torch
-
-from .util import *
+from .util import dist_matrix_dense, cos_cutoff, gaussian_embed
 
 
 def get_sym_funcs(params, at_nums, coords, elements):
     dist = dist_matrix_dense(coords)
-    padded_mol_mask = torch.ne(at_nums, 0)
+    # padded_mol_mask = torch.ne(at_nums, 0)
     radial_embed = get_radial_embed(dist, params['r_nought'], params['eta'], params['rad_cut'])
     scatter = torch.eq(at_nums.unsqueeze(-1), elements)
     radial_channels = radial_embed.unsqueeze(-2) * scatter.unsqueeze(-1)

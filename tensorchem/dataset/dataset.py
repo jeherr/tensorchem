@@ -21,7 +21,7 @@ class Dataset(TorchDataset):
     def _init_dataset(self):
         return
 
-    #TODO develop a more careful save and load routine for JSON data
+    # TODO develop a more careful save and load routine for JSON data
     def save(self, filename=None):
         # Will do some stuff to collect all necessary data into a format for JSON
         json_data = {
@@ -165,7 +165,6 @@ class Sample:
                 self.labels.update({key: torch.FloatTensor([value])})
             else:
                 self.labels.update({key: torch.FloatTensor(value)})
-
 
 
 if __name__ == "__main__":

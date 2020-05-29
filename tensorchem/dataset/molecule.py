@@ -5,7 +5,6 @@ and their properties (energy, atomic forces, dipole moments).
 
 import json
 import torch
-import numpy as np
 
 
 class MoleculeSet:

@@ -40,7 +40,7 @@ class TensorChem(nn.Module):
 
     def __init__(self, elements, layers, input_size):
         super().__init__()
-        subnets = [SubNet(element, input_size, layers) for element in elements]
+        # subnets = [SubNet(element, input_size, layers) for element in elements]
         return
 
     def forward(self, at_num, coords):
