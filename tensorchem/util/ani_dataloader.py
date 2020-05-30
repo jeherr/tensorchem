@@ -68,7 +68,7 @@ def load_ani1x(path_to_h5file, data_keys=[]):
     # Example for extracting DFT/DZ energies and forces
     for i, data in enumerate(iter_data_buckets(path_to_h5file, keys=data_keys)):
         mset = MoleculeSet()
-        mset.filename = "/Users/johnherr/tensorchem/tensorchem/data/ani1x-mol"+str(i)+".mset"
+        mset.filename = "/Users/johnherr/tensorchem/data/ani1x-mol"+str(i)+".mset"
         prop_keys = []
         for key in data.keys():
             if key == 'atomic_numbers':
@@ -77,18 +77,19 @@ def load_ani1x(path_to_h5file, data_keys=[]):
                 continue
             else:
                 prop_keys.append(key)
+        labels = {key: data[key].tolist() for key in prop_keys}
         for j, coords in enumerate(data['coordinates']):
-            g = Geometry(mset.atomic_nums, coords)
-            g.properties = {key: data[key][j].tolist() for key in prop_keys}
+            properties = {key: labels[key][j] for key in prop_keys}
+            g = Geometry(mset.atomic_nums, coords.tolist(), properties)
             mset.geometries.append(g)
         mset.save()
-    return
+        return
 
 
 if __name__ == "__main__":
     path_to_h5file = '/Users/johnherr/tensorchem/tensorchem/data/ani1x-release.h5'
     data_keys = ['wb97x_tz.energy', 'wb97x_tz.forces']
-    msets = load_ani1x(path_to_h5file, data_keys)
+    load_ani1x(path_to_h5file, data_keys)
     with open('../data/ani1x.mset', "w") as x:
         x.write("[")
     for mset in msets:

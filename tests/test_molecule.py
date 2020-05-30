@@ -20,7 +20,7 @@ def test_save_nofile_MoleculeSet():
 
 
 def test_Geometry():
-    with open('tests/data/h2o.mset', 'r') as data:
-        data = json.loads(data.read())
-    geom = Geometry(data['coordinates'], data['properties'])
+    mset = MoleculeSet()
+    mset.load('tests/data/h2o.mset')
+    geom = mset.geometries[0]
     assert len(geom.coords) != 0 and type(geom.properties) == dict
