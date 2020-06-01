@@ -2,8 +2,9 @@ import glob
 import os
 import json
 from ase.data import atomic_numbers
+from tensorchem.dataset.molecule import MoleculeSet, Geometry, Atom
 
-for mol in glob.glob("/Users/johnherr/tensorchem/data/chemspider_chno_opt/*.out"):
+for mol in glob.glob("/home/adriscoll/tensorchem/data/chemspider_data/chno_opt/*.out"):
     with open(mol, "r") as f:
         lines = f.readlines()
     head, mol = os.path.split(mol)
@@ -42,8 +43,8 @@ for mol in glob.glob("/Users/johnherr/tensorchem/data/chemspider_chno_opt/*.out"
             if "Standard Nuclear Orientation" in line:
                 xyz = []
                 for j in range(atoms - 1):
-                    xyz.append([float(lines[i + 3 + j].split()[2]), float(lines[i + 3 + j].split()[3]),
-                                float(lines[i + 3 + j].split()[4])])
+                    xyz.append((float(lines[i + 3 + j].split()[2]), float(lines[i + 3 + j].split()[3]),
+                                float(lines[i + 3 + j].split()[4])))
                 coords.append(xyz)
             # energies
             if "Convergence criterion met" in line:
@@ -54,9 +55,9 @@ for mol in glob.glob("/Users/johnherr/tensorchem/data/chemspider_chno_opt/*.out"
                 l = 0
                 force = []
                 for j in range(1, atoms):
-                    force.append([float(lines[i + k + 2].split()[l + 1]) / -0.529177208590000,
+                    force.append((float(lines[i + k + 2].split()[l + 1]) / -0.529177208590000,
                                   float(lines[i + k + 3].split()[l + 1]) / -0.529177208590000,
-                                  float(lines[i + k + 4].split()[l + 1]) / -0.529177208590000])
+                                  float(lines[i + k + 4].split()[l + 1]) / -0.529177208590000))
                     l += 1
                     if (j % 6) == 0:
                         k += 4
@@ -81,7 +82,6 @@ for mol in glob.glob("/Users/johnherr/tensorchem/data/chemspider_chno_opt/*.out"
                 for j in range(atoms - 1):
                     charge.append(float(lines[i + j + 4].split()[2]))
                 charges.append(charge)
-            #print(len(atomic_nums), len(energies), len(forces), len(dipoles), len(quadrupoles), len(charges))
     except Exception as Ex:
         print(Ex, mol)
         continue
@@ -94,18 +94,20 @@ for mol in glob.glob("/Users/johnherr/tensorchem/data/chemspider_chno_opt/*.out"
                         print("Atomic numbers are not the same between frames")
                         print(mol)
                         exit(0)
-            mset_data = {"atomic_numbers": atomic_nums[len(atomic_nums) - 1]}
-            geometries = [{"coordinates": coord} for coord in coords]
-            for i, geom in enumerate(geometries):
-                geom.update({"labels": {"wb97x-d.6-311gss.energy": energies[i],
-                             "wb97x-d.6-311gss.forces": forces[i],
-                             "wb97x-d.6-311gss.dipole": dipoles[i],
-                             "wb97x-d.6-311gss.quadrupole": quadrupoles[i],
-                             "wb97x-d.6-311gss.mulliken_charges": charges[i]}})
-            mset_data.update({"geometries": geometries,
-                              "identifiers": {"chemspider_id": mol[:-4]}})
-            with open(os.path.join("/Users/johnherr/tensorchem/data/", ".".join((mol[:-4], "mset"))), "w") as f2:
-                json.dump(mset_data, f2)
+            atoms = [Atom(at_num) for at_num in atomic_nums[0]]
+            mset = MoleculeSet(atoms)
+            for i in range(len(energies)):
+                coord = coords[i]
+                mol_labels = {"wb97x-d.6-311gss.energy": energies[i],
+                              "wb97x-d.6-311gss.dipole": dipoles[i],
+                              "wb97x-d.6-311gss.quadrupole": quadrupoles[i]}
+                atom_labels = {"wb97x-d.6-311gss.forces": forces[i],
+                               "wb97x-d.6-311gss.mulliken_charges": charges[i]}
+                mset.geometries.append(mset.build_geom(coord, mol_labels, atom_labels))
+            mset.identifiers = {"chemspider_id": mol[:-4]}
+            mset.trajectories['wb97x-d.6-311gss.optimize.geometry'] = opt_geoms
+            mset.save(filename=os.path.join("/home/adriscoll/tensorchem/data/chemspider_data/chno_opt_mset/", ".".join((mol[:-4], "mset"))))
+            #exit(0)
         else:
             print(mol)
             print(len(atomic_nums), len(energies), len(forces), len(dipoles), len(quadrupoles), len(charges))

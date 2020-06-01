@@ -1,9 +1,24 @@
-{"atomic_numbers": [8, 1, 1],
-"geometries": [{"coordinates": [[0.000000, 0.000000, 0.000000],
-                    [0.960000, 0.000000, 0.000000],
-                    [0.960000, 1.567952, 0.000000]], "labels": {"deg_of_freedom": 2}}, {"coordinates": [
-                    [0.000000, 0.000000, 0.000000],
-                    [0.960000, 0.000000, 0.000000],
-                    [0.960000, 1.567952, 0.000000]], "labels": {"deg_of_freedom": 2}}],
+{"atoms": [{"atomic_num": 8, "xyz": null, "labels": {}},
+            {"atomic_num": 1, "xyz": null, "labels": {}},
+            {"atomic_num": 1, "xyz": null, "labels": {}}],
+"trajectories": {"random": [{"atoms": [{"atomic_num": 8, "xyz": [0.0000, 0.0000, 0.1177],
+                           "labels": {"wb97x-d.6-311gss.mulliken_charge": -0.486}},
+                           {"atomic_num": 1, "xyz": [0.0000, 0.7549, -0.4709],
+                           "labels": {"wb97x-d.6-311gss.mulliken_charge": 0.243}},
+                           {"atomic_num": 1, "xyz": [0.0000, -0.7549, -0.4709],
+                           "labels": {"wb97x-d.6-311gss.mulliken_charge": 0.243}}
+                           ],
+                  "labels": {"wb97x-d.6-311gss.energy": -76.423353}
+               },
+               {"atoms": [{"atomic_num": 8, "xyz": [0.0000, 0.0000, 0.1177],
+                           "labels": {"wb97x-d.6-311gss.mulliken_charge": -0.486}},
+                           {"atomic_num": 1, "xyz": [0.0000, 0.7549, -0.4709],
+                           "labels": {"wb97x-d.6-311gss.mulliken_charge": 0.243}},
+                           {"atomic_num": 1, "xyz": [0.0000, -0.7549, -0.4709],
+                           "labels": {"wb97x-d.6-311gss.mulliken_charge": 0.243}}
+                           ],
+                  "labels": {"wb97x-d.6-311gss.energy": -76.423353}
+               }
+               ]},
 "identifiers": {"names": ["water"]}
 }

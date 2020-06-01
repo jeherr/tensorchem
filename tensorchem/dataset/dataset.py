@@ -134,11 +134,7 @@ class MixedDataset(Dataset):
                 elif type(value) == dict:
                     for k, v in value.items():
                         sample.update({k: v})
-            for key, value in sample.items():
-                if key == "coordinates":
-                    for coord in value:
-                        sample.update({key: np.array(coord)})
-                        self.samples.append(sample)
+            self.samples.append(sample)
 
     @classmethod
     def from_mset(cls, msets):
@@ -146,10 +142,12 @@ class MixedDataset(Dataset):
             msets = [msets]
         mixed_data = cls()
         for mset in msets:
-            for geom in mset.geometries:
-                sample = {"atomic_numbers": mset.atomic_nums, "coordinates": geom.coords}
-                sample.update({key: value for key, value in geom.labels.items()})
-                mixed_data.samples.append(sample)
+            for tupl in list(mset.trajectories.values()):
+                for geom in tupl:
+                    sample = {"atomic_numbers": [atom.at_num for atom in geom.atoms],
+                    "coordinates": [atom.xyz for atom in geom.atoms]}
+                    sample.update({key: value for key, value in geom.labels.items()})
+                    mixed_data.samples.append(sample)
         return mixed_data
 
 
@@ -169,6 +167,9 @@ class Sample:
 
 if __name__ == "__main__":
     mol1 = MoleculeSet()
-    mol1.load('19021.mset')
+    h2o = MoleculeSet()
+    #mol1.load('../../data/1609.mset')
+    h2o.load('tests/data/h2o.mset')
+    print(h2o.__getitem__(0).export_json().keys())
     ds1 = MixedDataset.from_mset(mol1)
-    print(ds1.__len__())
+    ds1.save('test.mset')
