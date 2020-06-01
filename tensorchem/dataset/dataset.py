@@ -136,8 +136,8 @@ class MixedDataset(Dataset):
                         sample.update({k: v})
             for key, value in sample.items():
                 if key == "coordinates":
-                    for data in value:
-                        sample.update({key: np.array(data)})
+                    for coord in value:
+                        sample.update({key: np.array(coord)})
                         self.samples.append(sample)
 
     @classmethod
