@@ -23,4 +23,4 @@ def test_Geometry():
     mset = MoleculeSet()
     mset.load('tests/data/h2o.mset')
     geom = mset.geometries[0]
-    assert len(geom.coords) != 0 and type(geom.properties) == dict
+    assert len(geom.coords) != 0 and type(geom.labels) == dict

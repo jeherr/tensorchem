@@ -1,6 +1,6 @@
 """
 Dataset objects for holding molecular geometries (atomic numbers, coordinates)
-and their properties (energy, atomic forces, dipole moments).
+and their labels (energy, atomic forces, dipole moments).
 """
 
 import json
@@ -8,8 +8,8 @@ import torch
 
 
 class MoleculeSet:
-    def __init__(self, atomic_nums=None):
-        self.atomic_nums = ()
+    def __init__(self, atomic_nums=(0,)):
+        self.atomic_nums = atomic_nums
         self.geometries = []
         self.identifiers = {}
         self.min_geom = None
@@ -19,7 +19,7 @@ class MoleculeSet:
         return len(self.geometries)
 
     def __setitem__(self, idx, value):
-        self.geometries[idx] = Geometry(value)
+        self.geometries[idx] = value
 
     def __getitem__(self, idx):
         return self.geometries[idx]
@@ -54,15 +54,15 @@ class MoleculeSet:
 
 
 class Geometry:
-    def __init__(self, atomic_nums=(0,), coords=((0.0, 0.0, 0.0),), properties={}):
+    def __init__(self, atomic_nums=(0,), coords=((0.0, 0.0, 0.0),), labels=None):
+        if labels is None:
+            labels = {}
         self.atomic_nums = atomic_nums
         self.coords = coords
-        self.properties = properties
+        self.labels = labels
 
     def __repr__(self):
-        return str(self.export_json())
-
-    def __str__(self):
+        # TODO add some of that fancy printing crap to make this print the xyz in a nicer format
         rep = str(self.n_atoms)
         rep += "\n\n"
         for i, at_num in enumerate(self.atomic_nums):
@@ -75,13 +75,12 @@ class Geometry:
         new_geom = cls()
         new_geom.atomic_nums = atomic_nums
         new_geom.coords = json_dict['coordinates']
-        new_geom.properties = json_dict['properties']
+        new_geom.labels = json_dict['labels']
         return new_geom
 
     def export_json(self):
-        return {"atomic_nums": self.atomic_nums,
-                "coordinates": self.coords,
-                "properties": self.properties}
+        return {"coordinates": self.coords,
+                "labels": self.labels}
 
     @property
     def n_atoms(self):
@@ -91,6 +90,7 @@ class Geometry:
         return torch.norm(self.coords)
 
 
-if __name__ == "__main__":
-    mol1 = MoleculeSet()
-    mol1.load('19021.mset')
+class Atom:
+    def __init__(self, xyz=(0.0, 0.0, 0.0)):
+        self.xyz = xyz
+        self.labels = {}
