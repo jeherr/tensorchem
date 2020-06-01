@@ -1,21 +1,21 @@
-import glob, os
+import glob
+import os
+import json
 from ase.data import atomic_numbers
 
-if not os.path.exists("/home/adriscoll/tensormol-jax/tensormol_jax/data/chemspider_data/"):
-    os.makedirs("/home/adriscoll/tensormol-jax/tensormol_jax/data/chemspider_data/")
-for mol in glob.glob("/home/adriscoll/tensormol-jax/tensormol_jax/data/chemspider_data/19021.out"):
-    f=open(mol, "r")
-    lines = f.readlines()
+for mol in glob.glob("/Users/johnherr/tensorchem/data/chemspider_chno_opt/*.out"):
+    with open(mol, "r") as f:
+        lines = f.readlines()
     head, mol = os.path.split(mol)
     atoms = None
-	
+
     for line in lines:
-        if (atoms != None):
-            if line.count("$end") > 0:
+        if atoms is not None:
+            if "$end" in line:
                 break
             else:
                 atoms += 1
-        if line.count("$molecule") > 0:
+        if "$molecule" in line:
             atoms = -1
 
     atomic_nums = []
@@ -25,78 +25,90 @@ for mol in glob.glob("/home/adriscoll/tensormol-jax/tensormol_jax/data/chemspide
     dipoles = []
     quadrupoles = []
     charges = []
+    converged = False
 
-    try:	
+    try:
         for i, line in enumerate(lines):
             if "**  OPTIMIZATION CONVERGED  **" in line:
+                converged = True
                 break
-            #atomic numbers
+            # atomic numbers
             if "Standard Nuclear Orientation" in line:
                 atom_nums = []
-                for j in range(atoms-1):
-                    atom_nums.append(atomic_numbers[lines[i+3+j].split()[1]])
+                for j in range(atoms - 1):
+                    atom_nums.append(atomic_numbers[lines[i + 3 + j].split()[1]])
                 atomic_nums.append(atom_nums)
-            #coordinates
+            # coordinates
             if "Standard Nuclear Orientation" in line:
                 xyz = []
-                for j in range(atoms-1):
-                    xyz.append([lines[i+3+j].split()[2],lines[i+3+j].split()[3],lines[i+3+j].split()[4]])
+                for j in range(atoms - 1):
+                    xyz.append([float(lines[i + 3 + j].split()[2]), float(lines[i + 3 + j].split()[3]),
+                                float(lines[i + 3 + j].split()[4])])
                 coords.append(xyz)
-            #energies
+            # energies
             if "Convergence criterion met" in line:
-                energies.append(line.split()[1])
-            #forces
+                energies.append(float(line.split()[1]))
+            # forces
             if "Gradient of SCF Energy" in line:
                 k = 0
                 l = 0
                 force = []
                 for j in range(1, atoms):
-                    force.append([str(float(lines[i+k+2].split()[l+1])/-0.529177208590000),
-                            str(float(lines[i+k+3].split()[l+1])/-0.529177208590000),
-                            str(float(lines[i+k+4].split()[l+1])/-0.529177208590000)])
+                    force.append([float(lines[i + k + 2].split()[l + 1]) / -0.529177208590000,
+                                  float(lines[i + k + 3].split()[l + 1]) / -0.529177208590000,
+                                  float(lines[i + k + 4].split()[l + 1]) / -0.529177208590000])
                     l += 1
                     if (j % 6) == 0:
                         k += 4
                         l = 0
-                    forces.append(force)
-            #dipoles
+                forces.append(force)
+            # dipoles
             if "Dipole Moment (Debye)" in line:
                 dipole = []
                 for j in range(3):
-                    dipole.append(str(float(lines[i+1].split()[1+j*2])))
+                    dipole.append(float(lines[i + 1].split()[1 + j * 2]))
                 dipoles.append(dipole)
-            #quadrupoles
+            # quadrupoles
             if "Quadrupole Moments (Debye-Ang)" in line:
                 quadrupole = []
                 for j in range(3):
-                    quadrupole.append([str(float(lines[i+1].split()[1+j*2])),str(float(lines[i+2].split()[1+j*2]))])
+                    quadrupole.append(
+                        [float(lines[i + 1].split()[1 + j * 2]), float(lines[i + 2].split()[1 + j * 2])])
                 quadrupoles.append(quadrupole)
-            #charges
-            if line.count("Ground-State Mulliken Net Atomic Charges") > 0:
+            # charges
+            if "Ground-State Mulliken Net Atomic Charges" in line:
                 charge = []
-                for j in range(atoms-1):
-                    charge.append(lines[i+j+4].split()[2])
+                for j in range(atoms - 1):
+                    charge.append(float(lines[i + j + 4].split()[2]))
                 charges.append(charge)
+            #print(len(atomic_nums), len(energies), len(forces), len(dipoles), len(quadrupoles), len(charges))
     except Exception as Ex:
         print(Ex, mol)
         continue
 
-    if len(atomic_nums) == len(coords) == len(energies) == len(dipoles) == len(quadrupoles) == len(charges) > 0:
-        f2 = open("/home/adriscoll/tensormol-jax/tensormol_jax/data/chemspider_data/" + mol[:-4] + ".mset", "w")
-        x = len(energies)-1
-        y = len(coords[0])-1
-        f2.write('{"atomic_number": ' + str(atomic_nums[len(atomic_nums)-1]) + ', ')
-        f2.write('"coordinates": [')
-        for i in range(x+1):
-            f2.write('[')
-            for j in range(y):
-                f2.write("[" + str(coords[i][j][0]) + ", " + str(coords[i][j][1]) + ", " + str(coords[i][j][2]) + "], ")
-            if i == x:
-                f2.write('[' + str(coords[i][y][0]) + ', ' + str(coords[i][y][1]) + ', ' + str(coords[i][y][2]) + ']]], ')
-            else:
-                f2.write('[' + str(coords[i][y][0]) + ', ' + str(coords[i][y][1]) + ', ' + str(coords[i][y][2]) + ']], ')
-        f2.write('"properties": {"energies": ' + str(float(energies[x])) + ', "forces": ' + str(forces[x]).replace("'", "") + ', "dipoles": '\
-            + str(dipoles[x]).replace("'", "") + ', "quadrupoles": ' + str(quadrupoles[x]).replace("'", "") + ', "charges": ' + str(charges[x]).replace("'", "") + '}}')
-        f2.close()
+    if converged:
+        if len(atomic_nums) == len(coords) == len(energies) == len(dipoles) == len(quadrupoles) == len(charges) > 0:
+            for i, atomic_num_1 in enumerate(atomic_nums):
+                for atomic_num_2 in atomic_nums[i+1:]:
+                    if tuple(atomic_num_1) != tuple(atomic_num_2):
+                        print("Atomic numbers are not the same between frames")
+                        print(mol)
+                        exit(0)
+            mset_data = {"atomic_numbers": atomic_nums[len(atomic_nums) - 1]}
+            geometries = [{"coordinates": coord} for coord in coords]
+            for i, geom in enumerate(geometries):
+                geom.update({"labels": {"wb97x-d.6-311gss.energy": energies[i],
+                             "wb97x-d.6-311gss.forces": forces[i],
+                             "wb97x-d.6-311gss.dipole": dipoles[i],
+                             "wb97x-d.6-311gss.quadrupole": quadrupoles[i],
+                             "wb97x-d.6-311gss.mulliken_charges": charges[i]}})
+            mset_data.update({"geometries": geometries,
+                              "identifiers": {"chemspider_id": mol[:-4]}})
+            with open(os.path.join("/Users/johnherr/tensorchem/data/", ".".join((mol[:-4], "mset"))), "w") as f2:
+                json.dump(mset_data, f2)
+        else:
+            print(mol)
+            print(len(atomic_nums), len(energies), len(forces), len(dipoles), len(quadrupoles), len(charges))
+            exit(0)
     else:
-        print(mol)
+        print("Optimization did not converge for "+mol)

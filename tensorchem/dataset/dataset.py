@@ -148,7 +148,7 @@ class MixedDataset(Dataset):
         for mset in msets:
             for geom in mset.geometries:
                 sample = {"atomic_numbers": mset.atomic_nums, "coordinates": geom.coords}
-                sample.update({key: value for key, value in geom.properties.items()})
+                sample.update({key: value for key, value in geom.labels.items()})
                 mixed_data.samples.append(sample)
         return mixed_data
 
