@@ -16,7 +16,7 @@ def test_len_MixedDataset():
 def test_getitem_MixedDataset():
     mixed_data = MixedDataset()
     mixed_data.load('tests/data/h2o.dset')
-    assert list(mixed_data.__getitem__(0).keys()) == ["atomic_numbers", "coordinates", "deg_of_freedom"]
+    assert list(mixed_data.__getitem__(0).keys()) == ["atomic_numbers", "coordinates", "wb97x-d.6-311gss.mulliken_charge"]
 
 
 def test_save_nofile_MixedDataset():
