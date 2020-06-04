@@ -7,7 +7,7 @@ functional theory properties for molecules. Sci Data 7, 134 (2020). https://doi.
 import h5py
 import numpy as np
 
-from tensorchem.dataset.molecule import MoleculeSet, Geometry
+from tensorchem.dataset.molecule import MoleculeSet, Geometry, Atom
 
 
 def iter_data_buckets(h5filename, keys):
@@ -67,38 +67,37 @@ name_dict = {
 def load_ani1x(path_to_h5file, data_keys=[]):
     # Example for extracting DFT/DZ energies and forces
     for i, data in enumerate(iter_data_buckets(path_to_h5file, keys=data_keys)):
-        mset = MoleculeSet()
-        mset.filename = "/Users/johnherr/tensorchem/data/ani1x-mol"+str(i)+".mset"
-        prop_keys = []
+        atoms = [Atom(atom_num) for atom_num in data['atomic_numbers']]
+        mset = MoleculeSet(atoms)
+        mset.filename = "/home/adriscoll/tensorchem/data/ani1x-mol"+str(i)+".mset"
+        prop_keys, geoms = [], []
         for key in data.keys():
-            if key == 'atomic_numbers':
-                mset.atomic_nums = data['atomic_numbers'].tolist()
-            elif key == 'coordinates':
+            if key == 'atomic_numbers' or key == 'coordinates':
                 continue
             else:
                 prop_keys.append(key)
-        labels = {key: data[key].tolist() for key in prop_keys}
+        mol_labels = {key: data[key] for key in prop_keys}
         for j, coords in enumerate(data['coordinates']):
-            properties = {key: labels[key][j] for key in prop_keys}
-            g = Geometry(mset.atomic_nums, coords.tolist(), properties)
-            mset.geometries.append(g)
+            atom_labels = {key: mol_labels[key][j] for key in prop_keys}
+            geoms.append(mset.build_geom(coords, mol_labels, atom_labels))
+        mset.trajectories['ani.data'] = geoms
         mset.save()
         return
 
 
 if __name__ == "__main__":
-    path_to_h5file = '/Users/johnherr/tensorchem/tensorchem/data/ani1x-release.h5'
+    path_to_h5file = '/home/adriscoll/tensorchem/data/ani1x-release.h5'
     data_keys = ['wb97x_tz.energy', 'wb97x_tz.forces']
     load_ani1x(path_to_h5file, data_keys)
-    with open('../data/ani1x.mset', "w") as x:
+    with open('/home/adriscoll/tensorchem/data/ani1x.mset', "w") as x:
         x.write("[")
     for mset in msets:
-        mset.save('../data/ani1x-temp.mset')
-        with open('../data/ani1x-temp.mset', "r") as f:
+        mset.save('/home/adriscoll/tensorchem/data/ani1x-temp.mset')
+        with open('/home/adriscoll/tensorchem/data/ani1x-temp.mset', "r") as f:
             mol_data = f.read()
-        with open('../data/ani1x.mset', "a") as x:
+        with open('/home/adriscoll/tensorchem/data/ani1x.mset', "a") as x:
             x.write(mol_data + ",")
-    with open('../data/ani1x.mset', "a") as x:
+    with open('/home/adriscoll/tensorchem/data/ani1x.mset', "a") as x:
         x.write("]")
 
 
