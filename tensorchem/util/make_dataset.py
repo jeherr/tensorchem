@@ -1,8 +1,7 @@
 import glob
 import os
-import json
 from ase.data import atomic_numbers
-from tensorchem.dataset.molecule import MoleculeSet, Geometry, Atom
+from tensorchem.dataset.molecule import MoleculeSet, Atom
 
 for mol in glob.glob("/home/adriscoll/tensorchem/data/chemspider_data/chno_opt/*.out"):
     with open(mol, "r") as f:
@@ -107,7 +106,6 @@ for mol in glob.glob("/home/adriscoll/tensorchem/data/chemspider_data/chno_opt/*
             mset.identifiers = {"chemspider_id": mol[:-4]}
             mset.trajectories['wb97x-d.6-311gss.optimize.geometry'] = opt_geoms
             mset.save(filename=os.path.join("/home/adriscoll/tensorchem/data/chemspider_data/chno_opt_mset/", ".".join((mol[:-4], "mset"))))
-            #exit(0)
         else:
             print(mol)
             print(len(atomic_nums), len(energies), len(forces), len(dipoles), len(quadrupoles), len(charges))
