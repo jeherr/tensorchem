@@ -7,6 +7,7 @@ dependencies:
     # Scripts
   - numpy
   - pytorch
+  - ase
     # Testing
   - pytest
   - pytest-cov
