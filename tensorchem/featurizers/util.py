@@ -18,7 +18,9 @@ def cos_cutoff(dist, cutoff):
     Returns:
           scaling_factor: Array with the same shape as dist. Used to scale features based on their distance
     """
-    return 0.5 * (torch.cos(pi * dist / cutoff) + 1.0)
+    cos_factor = 0.5 * (torch.cos(pi * dist / cutoff) + 1.0)
+    cos_factor = torch.where(dist < cutoff, cos_factor, torch.zeros_like(cos_factor))
+    return cos_factor
 
 
 def cos_angle(dxyz_ij, dxyz_ik):
