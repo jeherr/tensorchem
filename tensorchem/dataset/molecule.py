@@ -36,7 +36,7 @@ class MoleculeSet:
 
     @property
     def geometries(self) -> Tuple[List[List[int]]]:
-        return list(self.trajectories.values())[0]
+        return [geom for value in self.trajectories.values() for geom in value]
 
     @property
     def at_nums(self) -> Tuple[int, ...]:
@@ -85,12 +85,20 @@ class MoleculeSet:
                 raise FileNotFoundError("No filename given for loading")
             else:
                 filename = self.filename
+        if self.filename is None:
+            self.filename = filename
         with open(filename) as f:
             json_data = json.load(f)
         self.atoms = tuple([Atom.from_json(data) for data in json_data['atoms']])
         self.identifiers = json_data['identifiers']
         for key, value in json_data['trajectories'].items():
             self.trajectories.update({key: tuple([Geometry.from_json(geom_data) for geom_data in value])})
+
+    def write_xyz_trajectory(self):
+        with open(".".join((self.filename.rstrip(".mset"), "xyz")), "w") as f:
+            for geom in self.geometries:
+                f.write(str(geom))
+                f.write("\n")
 
 
 class Geometry:
@@ -105,7 +113,7 @@ class Geometry:
         rep = str(self.n_atoms)
         rep += "\n\n"
         for atom in self.atoms:
-            rep += "     ".join((str(atom.at_num), str(atom.x), str(atom.y), str(atom.z)))
+            rep += "     ".join((str(atom.at_symb), str(atom.x), str(atom.y), str(atom.z)))
             rep += "\n"
         return rep
 
@@ -136,12 +144,20 @@ class Geometry:
         return {"atoms": [atom.export_json() for atom in self.atoms],
                 "labels": self.labels}
 
+    def write_xyz(self, filename: str) -> None:
+        with open(filename, "w") as f:
+            f.write(self.__repr__())
+
 
 class Atom:
     def __init__(self, at_num: int = None, xyz: Tuple[float, float, float] = (None, None, None)):
         self.at_num = at_num
         self.xyz = xyz
         self.labels = {}
+
+    @property
+    def at_symb(self) -> str:
+        return chemical_symbols[self.at_num]
 
     @property
     def x(self) -> float:
@@ -159,7 +175,10 @@ class Atom:
     def from_json(cls, json_data: dict) -> 'Atom':
         new_atom = cls()
         new_atom.at_num = json_data['atomic_num']
-        new_atom.xyz = tuple([json_data['xyz']])
+        if json_data['xyz'] is None:
+            new_atom.xyz = (None, None, None)
+        else:
+            new_atom.xyz = tuple(json_data['xyz'])
         new_atom.labels = json_data['labels']
         return new_atom
 
