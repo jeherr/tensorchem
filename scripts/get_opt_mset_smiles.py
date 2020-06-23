@@ -1,9 +1,10 @@
 from tensorchem.dataset.molecule import MoleculeSet as MSet
 import glob
 from multiprocessing import Pool
-
+import time
 import copy
 import itertools
+from functools import partial 
 
 from rdkit.Chem import rdmolops
 
@@ -14,6 +15,7 @@ except ImportError:
 
 from collections import defaultdict
 
+import json
 import numpy as np
 import networkx as nx
 
@@ -408,6 +410,7 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
     valences_list = itertools.product(*valences_list_of_lists)
 
     best_BO = AC.copy()
+    charge_OK = False
 
     for valences in valences_list:
 
@@ -664,18 +667,45 @@ def xyz2mol(atoms, coordinates,
 
     return new_mol
 
-
 def xyz_to_smiles(filename):
     atoms, charge, xyz_coordinates = read_xyz_file(filename)
+    print(filename)
     mol = xyz2mol(atoms, xyz_coordinates, charge=charge)
     smiles = Chem.MolToSmiles(mol)
     return (filename, smiles)
 
+def mset_to_smiles(max_atoms, filename):
+    mset = MSet()
+    try:
+        mset.load(filename)
+    except json.JSONDecodeError:
+        return (None, None)
+    if mset.n_atoms > max_atoms:
+        return (None, None)
+    try:
+        charge = float(mset.min_geom().labels['wb97x-d.6-311gss.mulliken_charges'])
+    except TypeError:
+        charges = [float(geom.labels['wb97x-d.6311gss.mulliken_charges']) if 'charge' in geom.labels.keys() else 0 for geom in mset.geometries]
+        charge = max(charges, key = abs)
+    try:
+        mol = xyz2mol(mset.at_nums, [atom.xyz for geom in mset.geometries for atom in geom.atoms])
+    except Chem.AtomValenceException:
+        return (None, None)
+    smiles = Chem.MolToSmiles(mol)
+    mset.identifiers.update({"smiles": smiles})
+    mset.save(filename)
+    return (filename, smiles)
+
 
 if __name__ == "__main__":
-    with Pool(32) as p:
-        file_smile = p.map(xyz_to_smiles, list(glob.glob(
-            "/mnt/sdb1/jeherr/chemspider_data/chno_msets/opt/min_xyzs/*.min.xyz")))
-    with open("/mnt/sdb1/jeherr/chemspider_data/chno_msets/opt/min_xyzs/xyzfile_smiles.txt", "w") as f:
-        for file, smile in file_smile:
-            f.write(file+"     "+smile+"\n")
+    start = time.time()
+    with open("/mnt/sdb1/adriscoll/chemspider_data/chno_msets/chno_meta_natoms.txt", "r") as f:
+        contents = json.loads(f.read())
+    meta_natoms = [int(key) for key in list(contents.keys())]
+    func = partial(mset_to_smiles, max(meta_natoms))
+    with open("/mnt/sdb1/adriscoll/chemspider_data/chno_msets/opt_msetfile_smiles.txt", "w") as f:
+        with Pool(32) as p:
+            for file, smile in p.imap_unordered(func, glob.iglob("/mnt/sdb1/adriscoll/chemspider_data/chno_msets/opt/*.mset"), 100):
+                if file is not None and smile is not None:
+                    f.write(file+"     "+smile+"\n")
+    print(time.time() - start)

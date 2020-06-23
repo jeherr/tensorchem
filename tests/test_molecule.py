@@ -29,20 +29,16 @@ def test_at_symbs_MoleculeSet():
     assert pytest.mset.at_symbs == ('O', 'H', 'H')
 
 
+def test_isomer_MoleculeSet():
+    assert pytest.mset.is_isomer(pytest.mset)
+
+
 def test_getitem_MoleculeSet():
     assert pytest.mset.__getitem__(1).n_atoms == 3
 
 
-def test_eq_MoleculeSet():
-    mset1, mset2 = MoleculeSet(), MoleculeSet()
-    mset1.load('tests/data/h2o.mset')
-    mset2.load('tests/data/h2o.mset')
-    assert mset1 == mset2
-
-
-def test_save_nofile_MoleculeSet():
-    with pytest.raises(FileNotFoundError):
-        pytest.mset.save()
+def test_save_MoleculeSet():
+    pytest.mset.save()
 
 
 def test_buildgeoms_MoleculeSet():

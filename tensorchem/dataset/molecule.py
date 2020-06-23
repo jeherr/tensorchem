@@ -27,12 +27,24 @@ class MoleculeSet:
         return hash(tuple([atom.at_num for atom in self.atoms]))
 
     def compare_hash(self, other: 'MoleculeSet') -> bool:
-        # TODO We should probably rename this to a more descriptive named method instead of __eq__. It might be
-        #  confusing to users. Equality comparison is different from what we are doing here, so it may not be very
-        #  "Pythonic"
         if isinstance(other, MoleculeSet):
             return self.__hash__() == other.__hash__()
         return NotImplemented
+
+    def is_isomer(self, other: 'MoleculeSet') -> bool:
+        if isinstance(other, MoleculeSet):
+            return self.chem_formula == other.chem_formula
+        return NotImplemented
+
+    @property
+    def chem_formula(self):
+        formula = {}
+        for atom in self.atoms:
+            if atom.at_num in formula.keys():
+                formula[atom.at_num] += 1
+            else:
+                formula[atom.at_num] = 1
+        return formula
 
     @property
     def geometries(self) -> Tuple[List[List[int]]]:
@@ -50,8 +62,7 @@ class MoleculeSet:
     def n_atoms(self) -> int:
         return len(self.atoms)
 
-    @property
-    def min_geom(self) -> 'Geometry':
+    def get_min_geom(self) -> 'Geometry':
         energies = [value if "energy" in key else 0 for geom in self.geometries for key, value in geom.labels.items()]
         return self.geometries[index(min(energies))]
 

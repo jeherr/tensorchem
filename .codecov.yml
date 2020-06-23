@@ -5,7 +5,8 @@ coverage:
     project:
       default: false
       tests:
-        target: 100%
+        target: auto
+        threshold: 10%
 comment:
   layout: "header"
   require_changes: false
