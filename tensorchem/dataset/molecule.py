@@ -24,34 +24,50 @@ class MoleculeSet:
         return self.geometries[idx]
 
     def __hash__(self) -> hash(tuple):
-        return hash(tuple(atom.at_num for atom in self.atoms))
+        return hash(tuple([atom.at_num for atom in self.atoms]))
 
-    def __eq__(self, other: 'MoleculeSet') -> bool:
-        # TODO We should probably rename this to a more descriptive named method instead of __eq__. It might be
-        #  confusing to users. Equality comparison is different from what we are doing here, so it may not be very
-        #  "Pythonic"
+    def compare_hash(self, other: 'MoleculeSet') -> bool:
         if isinstance(other, MoleculeSet):
             return self.__hash__() == other.__hash__()
         return NotImplemented
 
+    def is_isomer(self, other: 'MoleculeSet') -> bool:
+        if isinstance(other, MoleculeSet):
+            return self.chem_formula == other.chem_formula
+        return NotImplemented
+
+    @property
+    def chem_formula(self):
+        formula = {}
+        for atom in self.atoms:
+            if atom.at_num in formula.keys():
+                formula[atom.at_num] += 1
+            else:
+                formula[atom.at_num] = 1
+        return formula
+
     @property
     def geometries(self) -> Tuple[List[List[int]]]:
-        return list(self.trajectories.values())[0]
+        return [geom for value in self.trajectories.values() for geom in value]
 
     @property
     def at_nums(self) -> Tuple[int, ...]:
-        return tuple(atom.at_num for atom in self.atoms)
+        return tuple([atom.at_num for atom in self.atoms])
 
     @property
     def at_symbs(self) -> Tuple[str, ...]:
-        return tuple(chemical_symbols[atom.at_num] for atom in self.atoms)
+        return tuple([chemical_symbols[atom.at_num] for atom in self.atoms])
 
     @property
     def n_atoms(self) -> int:
         return len(self.atoms)
 
+    def get_min_geom(self) -> 'Geometry':
+        energies = [value if "energy" in key else 0 for geom in self.geometries for key, value in geom.labels.items()]
+        return self.geometries[index(min(energies))]
+
     def build_geom(self, coords: list, mol_labels: dict, atom_labels: dict) -> 'Geometry':
-        geom_atoms = tuple(Atom(atom.at_num) for atom in self.atoms)
+        geom_atoms = tuple([Atom(atom.at_num) for atom in self.atoms])
         for i, atom in enumerate(geom_atoms):
             atom.xyz = (coords[i][0], coords[i][1], coords[i][2])
         for key, label in atom_labels.items():
@@ -80,12 +96,20 @@ class MoleculeSet:
                 raise FileNotFoundError("No filename given for loading")
             else:
                 filename = self.filename
+        if self.filename is None:
+            self.filename = filename
         with open(filename) as f:
             json_data = json.load(f)
-        self.atoms = tuple(Atom.from_json(data) for data in json_data['atoms'])
+        self.atoms = tuple([Atom.from_json(data) for data in json_data['atoms']])
         self.identifiers = json_data['identifiers']
         for key, value in json_data['trajectories'].items():
             self.trajectories.update({key: tuple([Geometry.from_json(geom_data) for geom_data in value])})
+
+    def write_xyz_trajectory(self):
+        with open(".".join((self.filename.rstrip(".mset"), "xyz")), "w") as f:
+            for geom in self.geometries:
+                f.write(str(geom))
+                f.write("\n")
 
 
 class Geometry:
@@ -100,17 +124,17 @@ class Geometry:
         rep = str(self.n_atoms)
         rep += "\n\n"
         for atom in self.atoms:
-            rep += "     ".join((str(atom.at_num), str(atom.x), str(atom.y), str(atom.z)))
+            rep += "     ".join((str(atom.at_symb), str(atom.x), str(atom.y), str(atom.z)))
             rep += "\n"
         return rep
 
     @property
     def at_nums(self) -> Tuple[Optional[int], ...]:
-        return tuple(atom.at_num for atom in self.atoms)
+        return tuple([atom.at_num for atom in self.atoms])
 
     @property
     def at_symbs(self) -> Tuple[Optional[str], ...]:
-        return tuple(chemical_symbols[atom.at_num] for atom in self.atoms)
+        return tuple([chemical_symbols[atom.at_num] for atom in self.atoms])
 
     @property
     def n_atoms(self) -> int:
@@ -118,12 +142,12 @@ class Geometry:
 
     @property
     def coords(self) -> Tuple[Optional[Tuple[float, float, float]], ...]:
-        return tuple(atom.xyz for atom in self.atoms)
+        return tuple([atom.xyz for atom in self.atoms])
 
     @classmethod
     def from_json(cls, json_data: dict) -> 'Geometry':
         new_geom = cls()
-        new_geom.atoms = tuple(Atom.from_json(atom_data) for atom_data in json_data['atoms'])
+        new_geom.atoms = tuple([Atom.from_json(atom_data) for atom_data in json_data['atoms']])
         new_geom.labels = json_data['labels']
         return new_geom
 
@@ -131,12 +155,20 @@ class Geometry:
         return {"atoms": [atom.export_json() for atom in self.atoms],
                 "labels": self.labels}
 
+    def write_xyz(self, filename: str) -> None:
+        with open(filename, "w") as f:
+            f.write(self.__repr__())
+
 
 class Atom:
     def __init__(self, at_num: int = None, xyz: Tuple[float, float, float] = (None, None, None)):
         self.at_num = at_num
         self.xyz = xyz
         self.labels = {}
+
+    @property
+    def at_symb(self) -> str:
+        return chemical_symbols[self.at_num]
 
     @property
     def x(self) -> float:
@@ -154,7 +186,10 @@ class Atom:
     def from_json(cls, json_data: dict) -> 'Atom':
         new_atom = cls()
         new_atom.at_num = json_data['atomic_num']
-        new_atom.xyz = tuple(json_data['xyz'])
+        if json_data['xyz'] is None:
+            new_atom.xyz = (None, None, None)
+        else:
+            new_atom.xyz = tuple(json_data['xyz'])
         new_atom.labels = json_data['labels']
         return new_atom
 
