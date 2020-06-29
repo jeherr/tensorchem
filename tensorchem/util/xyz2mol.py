@@ -576,7 +576,7 @@ def chiral_stereo_check(mol):
     return
 
 
-def geom_to_mol(geom, allow_charged_fragments=True, use_graph=True, use_huckel=False, embed_chiral=True):
+def geom_to_mol(geom, charge, allow_charged_fragments=True, use_graph=True, use_huckel=False, embed_chiral=True):
     """
     Generate a rdkit molobj from atoms, coordinates and a total_charge.
     args:
@@ -595,7 +595,7 @@ def geom_to_mol(geom, allow_charged_fragments=True, use_graph=True, use_huckel=F
     # Get atom connectivity (AC) matrix, list of atomic numbers, molecular charge,
     # and mol object with no connectivity information
     atoms = [atom.at_num for atom in geom.atoms]
-    charge = 0 # TODO hardcoded to 0 for now, in future MSets need to know their formal charge
+    charge = charge # TODO hardcoded to 0 for now, in future MSets need to know their formal charge
     AC, mol = xyz_to_connectivity(atoms, geom.coords, charge, use_huckel=use_huckel)
 
     # Convert AC to bond order matrix and add connectivity and charge info to
@@ -611,8 +611,8 @@ def geom_to_mol(geom, allow_charged_fragments=True, use_graph=True, use_huckel=F
     return new_mol
 
 
-def geom_to_smiles(geom):
-    m = geom_to_mol(geom)
+def geom_to_smiles(geom, charge=0):
+    m = geom_to_mol(geom, charge)
     smiles = Chem.MolToSmiles(m, isomericSmiles=False)
     m = Chem.MolFromSmiles(smiles)
     smiles = Chem.MolToSmiles(m, isomericSmiles=False)

@@ -39,50 +39,8 @@ class Dataset(TorchDataset):
 class MolDataset(Dataset):
     def __init__(self):
         super(MolDataset, self).__init__()
-        self.samples = ()  # Immutable type so order of molecules cannot change during training
+        self.samples = []  # Immutable type so order of molecules cannot change during training
         self.idx_map = {}  # Maps an overall sample index to the molecule and geometry indices
-
-    def __len__(self):
-        return sum([len(molecule_set) for molecule_set in self.samples])
-
-    def __getitem__(self, idx):
-        return
-
-    def save(self, filename=None):
-        if filename is None:
-            if self.filename is None:
-                print("No filename given for saving")
-                exit(0)
-            else:
-                filename = self.filename
-        json_data = {
-            "atomic_number": [sample['atomic_number'] for sample in self.samples],
-            "coordinates": [geom.coords.tolist() for sample in self.samples for geom in sample['geometries']],
-            "properties": [geom.properties for sample in self.samples for geom in sample['geometries']]
-        }
-        with open(filename, "w") as f:
-            json.dump(json_data, f)
-
-    def load(self, filename=None):
-        if filename is None:
-            if self.filename is None:
-                raise FileNotFoundError("No filename given for loading")
-            else:
-                filename = self.filename
-        with open(filename, 'r') as f:
-            for line in f:
-                mset = json.loads(line)
-                sample = {
-                    "atomic_number": mset['atomic_number'],
-                    "geometries": [Geometry(np.array(mset['coordinates']), mset['properties'])]
-                }
-                self.samples.append(sample)
-
-
-class MixedDataset(Dataset):
-    def __init__(self):
-        super(MixedDataset, self).__init__()
-        self.samples = []
 
     def __len__(self):
         return len(self.samples)
@@ -108,10 +66,82 @@ class MixedDataset(Dataset):
         for sample in self.samples:
             data = {}
             for key, value in sample.items():
-                if type(value) is np.ndarray:
-                    data.update({key: value.tolist()})
-                else:
-                    data.update({key: value})
+                data.update({key: value})
+            json_data.append(data)
+        with open(filename, "w") as f:
+            json.dump(json_data, f)
+
+    def load(self, filename=None):
+        if filename is None:
+            if self.filename is None:
+                raise FileNotFoundError("No filename given for loading")
+            else:
+                filename = self.filename
+        with open(filename, "r") as f:
+            json_data = json.loads(f.read())
+        if type(json_data) is not list:
+            json_data = [json_data]
+        for data in json_data:
+            sample = {}
+            for key, value in data.items():
+                if type(value) == list:
+                    sample.update({key: value})
+                elif type(value) == dict:
+                    for k, v in value.items():
+                        sample.update({k: v})
+            self.samples.append(sample)
+
+    @classmethod
+    def from_mset(cls, msets):
+        if type(msets) is MoleculeSet:
+            msets = [msets]
+        mol_data = cls()
+        for mset in msets:
+            atoms = {"atomic_num": [atom.at_num for atom in mset.atoms],
+                     "xyz": [atom.xyz for atom in mset.atoms]}
+            atoms.update({key: value for atom in mset.atoms for key, value in atom.labels.items()})
+            geometries = []
+            for geom in mset.geometries:
+                geoms = {"atomic_num": [atom.at_num for atom in geom.atoms],
+                         "xyz": [atom.xyz for atom in geom.atoms]}
+                geoms.update({key: value for key, value in geom.labels.items()})
+                geometries.append(geoms)
+            sample = {"atoms": atoms, "geometries": (geometries)} #geometries immutable
+            mol_data.samples.append(sample)
+        return mol_data
+
+
+class MixedDataset(Dataset):
+    def __init__(self):
+        super(MixedDataset, self).__init__()
+        self.samples = []
+        self.filename = None
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        item = {}
+        for key, value in self.samples[idx].items():
+            if type(value) == np.ndarray:
+                item.update({key: torch.from_numpy(value)})
+            elif type(value) == float:
+                item.update({key: torch.FloatTensor([value])})
+            else:
+                item.update({key: torch.FloatTensor(value)})
+        return item
+
+    def save(self, filename=None):
+        if filename is None:
+            if self.filename is None:
+                raise FileNotFoundError("No filename given for saving")
+            else:
+                filename = self.filename
+        json_data = []
+        for sample in self.samples:
+            data = {}
+            for key, value in sample.items():
+                data.update({key: value})
             json_data.append(data)
         with open(filename, "w") as f:
             json.dump(json_data, f)
@@ -142,12 +172,13 @@ class MixedDataset(Dataset):
             msets = [msets]
         mixed_data = cls()
         for mset in msets:
-            for tupl in list(mset.trajectories.values()):
-                for geom in tupl:
-                    sample = {"atomic_numbers": [atom.at_num for atom in geom.atoms],
-                    "coordinates": [atom.xyz for atom in geom.atoms]}
-                    sample.update({key: value for key, value in geom.labels.items()})
-                    mixed_data.samples.append(sample)
+            for geom in mset.geometries:
+                atoms = {"atomic_num": [atom.at_num for atom in geom.atoms],
+                         "xyz": [atom.xyz for atom in geom.atoms]}
+                atoms.update({key: value for atom in geom.atoms for key, value in atom.labels.items()})
+                sample = {"atoms": atoms}
+                sample.update({key: value for key, value in geom.labels.items()})
+                mixed_data.samples.append(sample)
         return mixed_data
 
 
@@ -166,10 +197,14 @@ class Sample:
 
 
 if __name__ == "__main__":
-    mol1 = MoleculeSet()
-    h2o = MoleculeSet()
-    #mol1.load('../../data/1609.mset')
-    h2o.load('tests/data/h2o.mset')
-    print(h2o.__getitem__(0).export_json().keys())
-    ds1 = MixedDataset.from_mset(mol1)
-    ds1.save('test.mset')
+    mol1, mol2, mds1 = MoleculeSet(), MoleculeSet(), MolDataset()
+    mol1.filename = '/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/meta/15309.mset'
+    mol2.filename = '/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/meta/40036.mset'
+    mol1.load(), mol2.load()
+    ds1 = MixedDataset.from_mset([mol1, mol2])
+    #mds1 = MolDataset.from_mset([mol1, mol2])
+    #ds1 = MixedDataset()
+    #ds1.filename = 'test.mset'
+    #ds1.load()
+    mds1.load('test1.mset')
+    print(mds1.__len__())
