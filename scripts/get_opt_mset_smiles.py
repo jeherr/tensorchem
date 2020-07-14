@@ -56,17 +56,34 @@ atomic_valence[53] = [1]
 
 atomic_valence_electrons = {}
 atomic_valence_electrons[1] = 1
+atomic_valence_electrons[2] = 2
+atomic_valence_electrons[3] = 1
+atomic_valence_electrons[4] = 2
 atomic_valence_electrons[5] = 3
 atomic_valence_electrons[6] = 4
 atomic_valence_electrons[7] = 5
 atomic_valence_electrons[8] = 6
 atomic_valence_electrons[9] = 7
+atomic_valence_electrons[11] = 1
+atomic_valence_electrons[12] = 2
+atomic_valence_electrons[13] = 2
 atomic_valence_electrons[14] = 4
 atomic_valence_electrons[15] = 5
 atomic_valence_electrons[16] = 6
 atomic_valence_electrons[17] = 7
+atomic_valence_electrons[19] = 1
+atomic_valence_electrons[20] = 2
+atomic_valence_electrons[31] = 3
 atomic_valence_electrons[32] = 4
+atomic_valence_electrons[33] = 5
+atomic_valence_electrons[34] = 6
 atomic_valence_electrons[35] = 7
+atomic_valence_electrons[37] = 1
+atomic_valence_electrons[38] = 2
+atomic_valence_electrons[49] = 3
+atomic_valence_electrons[50] = 4
+atomic_valence_electrons[51] = 5
+atomic_valence_electrons[52] = 6
 atomic_valence_electrons[53] = 7
 
 
@@ -84,7 +101,6 @@ def int_atom(atom):
     convert str atom to integer atom
     """
     global __ATOM_LIST__
-    # print(atom)
     atom = atom.lower()
     return __ATOM_LIST__.index(atom) + 1
 
@@ -410,7 +426,7 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
     valences_list = itertools.product(*valences_list_of_lists)
 
     best_BO = AC.copy()
-    charge_OK = False
+    charge_OK = True
 
     for valences in valences_list:
 
@@ -443,6 +459,7 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
 
     if not charge_OK:
         print("Warning: SMILES charge doesn't match input charge")
+
     return best_BO, atomic_valence_electrons
 
 
@@ -630,12 +647,7 @@ def chiral_stereo_check(mol):
     return
 
 
-def xyz2mol(atoms, coordinates,
-            charge=0,
-            allow_charged_fragments=True,
-            use_graph=True,
-            use_huckel=False,
-            embed_chiral=True):
+def xyz2mol(atoms, coordinates, charge=0, allow_charged_fragments=True, use_graph=True, use_huckel=False, embed_chiral=True):
     """
     Generate a rdkit molobj from atoms, coordinates and a total_charge.
     args:
@@ -657,9 +669,7 @@ def xyz2mol(atoms, coordinates,
 
     # Convert AC to bond order matrix and add connectivity and charge info to
     # mol object
-    new_mol = AC2mol(mol, AC, atoms, charge,
-                     allow_charged_fragments=allow_charged_fragments,
-                     use_graph=use_graph)
+    new_mol = AC2mol(mol, AC, atoms, charge, allow_charged_fragments=allow_charged_fragments, use_graph=use_graph)
 
     # Check for stereocenters and chiral centers
     if embed_chiral:
@@ -667,45 +677,40 @@ def xyz2mol(atoms, coordinates,
 
     return new_mol
 
-def xyz_to_smiles(filename):
-    atoms, charge, xyz_coordinates = read_xyz_file(filename)
-    print(filename)
-    mol = xyz2mol(atoms, xyz_coordinates, charge=charge)
-    smiles = Chem.MolToSmiles(mol)
-    return (filename, smiles)
-
 def mset_to_smiles(max_atoms, filename):
     mset = MSet()
     try:
         mset.load(filename)
     except json.JSONDecodeError:
+        print("json decode error")
         return (None, None)
     if mset.n_atoms > max_atoms:
         return (None, None)
+    geom = mset.get_min_geom
     try:
-        charge = float(mset.min_geom().labels['wb97x-d.6-311gss.mulliken_charges'])
-    except TypeError:
-        charges = [float(geom.labels['wb97x-d.6311gss.mulliken_charges']) if 'charge' in geom.labels.keys() else 0 for geom in mset.geometries]
-        charge = max(charges, key = abs)
+        charges = [float(atom.labels['wB97X-D.6-311g**.charges']) for atom in geom.atoms]
+    except KeyError:
+        charges = [float(atom.labels['wb97x-d.6-311gss.mulliken_charges']) for atom in geom.atoms]
+    charge = sum(charges)/len(charges)
     try:
-        mol = xyz2mol(mset.at_nums, [atom.xyz for geom in mset.geometries for atom in geom.atoms])
+        mol = xyz2mol(geom.at_nums, [atom.xyz for atom in geom.atoms], charge)
     except Chem.AtomValenceException:
+        print("atom valence exception")
         return (None, None)
-    smiles = Chem.MolToSmiles(mol)
+    smiles = Chem.MolToSmiles(mol, isomericSmiles=False)
+    m = Chem.MolFromSmiles(smiles)
+    smiles = Chem.MolToSmiles(m, isomericSmiles=False)
     mset.identifiers.update({"smiles": smiles})
     mset.save(filename)
     return (filename, smiles)
 
-
 if __name__ == "__main__":
-    start = time.time()
-    with open("/mnt/sdb1/adriscoll/chemspider_data/chno_msets/chno_meta_natoms.txt", "r") as f:
-        contents = json.loads(f.read())
-    meta_natoms = [int(key) for key in list(contents.keys())]
+    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/meta_smiles_natoms.txt", "r") as f:
+        meta_contents = json.loads(f.read())
+    meta_natoms = [int(key) for key in list(meta_contents.keys())]
     func = partial(mset_to_smiles, max(meta_natoms))
-    with open("/mnt/sdb1/adriscoll/chemspider_data/chno_msets/opt_msetfile_smiles.txt", "w") as f:
+    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/opt_msets_smiles.txt", "w") as f:
         with Pool(32) as p:
-            for file, smile in p.imap_unordered(func, glob.iglob("/mnt/sdb1/adriscoll/chemspider_data/chno_msets/opt/*.mset"), 100):
+            for file, smile in p.imap_unordered(func, glob.iglob("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/opt/*.mset"), 100):
                 if file is not None and smile is not None:
-                    f.write(file+"     "+smile+"\n")
-    print(time.time() - start)
+                    f.write(file+"\n")

@@ -59,12 +59,26 @@ class MoleculeSet:
         return tuple([chemical_symbols[atom.at_num] for atom in self.atoms])
 
     @property
+    def elements(self) -> Tuple[str, ...]:
+        return tuple([set([self.at_symbs])])
+
+    @property
     def n_atoms(self) -> int:
         return len(self.atoms)
 
+    @property
     def get_min_geom(self) -> 'Geometry':
-        energies = [value if "energy" in key else 0 for geom in self.geometries for key, value in geom.labels.items()]
-        return self.geometries[index(min(energies))]
+        try:
+            energies = [geom.labels['wb97x-d.6-311gss.energy'] for geom in self.geometries]
+        except:
+            try:
+                energies = [geom.labels['wB97X-D.6-311g**.potential'] for geom in self.geometries]
+            except:
+                try:
+                    energies = [geom.labels['wb97x_tz.energy'] for geom in self.geometries]
+                except:
+                    return self.geometries[0]
+        return self.geometries[energies.index(min(energies))]
 
     def build_geom(self, coords: list, mol_labels: dict, atom_labels: dict) -> 'Geometry':
         geom_atoms = tuple([Atom(atom.at_num) for atom in self.atoms])

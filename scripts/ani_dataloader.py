@@ -7,7 +7,7 @@ functional theory properties for molecules. Sci Data 7, 134 (2020). https://doi.
 import h5py
 import numpy as np
 
-from tensorchem.dataset.molecule import MoleculeSet, Geometry, Atom
+from tensorchem.dataset.molecule import MoleculeSet, Atom
 
 
 def iter_data_buckets(h5filename, keys):
@@ -67,38 +67,27 @@ name_dict = {
 def load_ani1x(path_to_h5file, data_keys=[]):
     # Example for extracting DFT/DZ energies and forces
     for i, data in enumerate(iter_data_buckets(path_to_h5file, keys=data_keys)):
-        atoms = [Atom(atom_num) for atom_num in data['atomic_numbers']]
+        atoms = [Atom(at_num) for at_num in data['atomic_numbers'].tolist()]
         mset = MoleculeSet(atoms)
-        mset.filename = "/home/adriscoll/tensorchem/data/ani1x-mol"+str(i)+".mset"
-        prop_keys, geoms = [], []
+        mset.filename = "/mnt/sdb1/adriscoll/ani1x-data/ani1x-msets/ani1x-mol"+str(i)+".mset"
+        mol_keys, atom_keys, geoms = [], [], []
         for key in data.keys():
             if key == 'atomic_numbers' or key == 'coordinates':
                 continue
-            else:
-                prop_keys.append(key)
-        mol_labels = {key: data[key] for key in prop_keys}
-        for j, coords in enumerate(data['coordinates']):
-            atom_labels = {key: mol_labels[key][j] for key in prop_keys}
-            geoms.append(mset.build_geom(coords, mol_labels, atom_labels))
+            elif 'energy' in key or 'dipole' in key:
+                mol_keys.append(key)
+            elif 'force' in key or 'charge' in key:
+                atom_keys.append(key)
+        mol_labels = {key: data[key][-1].tolist() for key in mol_keys}
+        atom_labels = {key: data[key][-1].tolist() for key in atom_keys}
+        geoms.append(mset.build_geom(data['coordinates'][-1].tolist(), mol_labels, atom_labels))
         mset.trajectories['ani.data'] = geoms
         mset.save()
-        return
-
+    return
 
 if __name__ == "__main__":
-    path_to_h5file = '/home/adriscoll/tensorchem/data/ani1x-release.h5'
-    data_keys = ['wb97x_tz.energy', 'wb97x_tz.forces']
-    load_ani1x(path_to_h5file, data_keys)
-    with open('/home/adriscoll/tensorchem/data/ani1x.mset', "w") as x:
-        x.write("[")
-    for mset in msets:
-        mset.save('/home/adriscoll/tensorchem/data/ani1x-temp.mset')
-        with open('/home/adriscoll/tensorchem/data/ani1x-temp.mset', "r") as f:
-            mol_data = f.read()
-        with open('/home/adriscoll/tensorchem/data/ani1x.mset', "a") as x:
-            x.write(mol_data + ",")
-    with open('/home/adriscoll/tensorchem/data/ani1x.mset', "a") as x:
-        x.write("]")
+    path_to_h5file = '/mnt/sdb1/adriscoll/ani1x-data/ani1x-release.h5'
+    load_ani1x(path_to_h5file, [])
 
 
 
