@@ -150,10 +150,10 @@ def clean_charges(mol):
     #              '[O:1]=[c:2][c-:3]>>[*-:1][*:2][*+0:3]',
     #              '[O:1]=[C:2][C-:3]>>[*-:1][*:2]=[*+0:3]']
 
-    rxn_smarts = ['[#6,#7:1]1=[#6,#7:2][#6,#7:3]=[#6,#7:4][CX3-,NX3-:5][#6,#7:6]1=[#6,#7:7]>>'
-                  '[#6,#7:1]1=[#6,#7:2][#6,#7:3]=[#6,#7:4][-0,-0:5]=[#6,#7:6]1[#6-,#7-:7]',
-                  '[#6,#7:1]1=[#6,#7:2][#6,#7:3](=[#6,#7:4])[#6,#7:5]=[#6,#7:6][CX3-,NX3-:7]1>>'
-                  '[#6,#7:1]1=[#6,#7:2][#6,#7:3]([#6-,#7-:4])=[#6,#7:5][#6,#7:6]=[-0,-0:7]1']
+    rxn_smarts = [''.join(('[#6,#7:1]1=[#6,#7:2][#6,#7:3]=[#6,#7:4][CX3-,NX3-:5][#6,#7:6]1=[#6,#7:7]>>',
+                           '[#6,#7:1]1=[#6,#7:2][#6,#7:3]=[#6,#7:4][-0,-0:5]=[#6,#7:6]1[#6-,#7-:7]')),
+                  ''.join(('[#6,#7:1]1=[#6,#7:2][#6,#7:3](=[#6,#7:4])[#6,#7:5]=[#6,#7:6][CX3-,NX3-:7]1>>',
+                           '[#6,#7:1]1=[#6,#7:2][#6,#7:3]([#6-,#7-:4])=[#6,#7:5][#6,#7:6]=[-0,-0:7]1'))]
 
     fragments = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
 
@@ -407,7 +407,7 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
                               atomic_valence_electrons, atoms, valences,
                               allow_charged_fragments=allow_charged_fragments)
             charge_ok = charge_is_ok(BO, charge, atomic_valence_electrons, atoms,
-                                  allow_charged_fragments=allow_charged_fragments)
+                                     allow_charged_fragments=allow_charged_fragments)
 
             if status:
                 return BO, atomic_valence_electrons
@@ -595,7 +595,6 @@ def geom_to_mol(geom, charge, allow_charged_fragments=True, use_graph=True, use_
     # Get atom connectivity (AC) matrix, list of atomic numbers, molecular charge,
     # and mol object with no connectivity information
     atoms = [atom.at_num for atom in geom.atoms]
-    charge = charge # TODO hardcoded to 0 for now, in future MSets need to know their formal charge
     AC, mol = xyz_to_connectivity(atoms, geom.coords, charge, use_huckel=use_huckel)
 
     # Convert AC to bond order matrix and add connectivity and charge info to

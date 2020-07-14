@@ -80,7 +80,7 @@ def load_ani1x(path_to_h5file, data_keys=[]):
                 atom_keys.append(key)
         mol_labels = {key: data[key][-1].tolist() for key in mol_keys}
         atom_labels = {key: data[key][-1].tolist() for key in atom_keys}
-        geoms.append(mset.build_geom(data['coordinates'][-1].tolist(), mol_labels, atom_labels))
+        geoms.append(mset.new_geometry(data['coordinates'][-1].tolist(), mol_labels, atom_labels))
         mset.trajectories['ani.data'] = geoms
         mset.save()
     return
