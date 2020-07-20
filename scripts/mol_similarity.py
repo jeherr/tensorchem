@@ -2,7 +2,6 @@ import glob
 import json
 import numpy as np
 from rdkit import Chem, DataStructs
-import matplotlib.pyplot as plt
 
 opt_smiles = []
 try:
@@ -29,8 +28,8 @@ except FileNotFoundError:
         json.dump(opt_smiles, file)
 
 try:
-    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_opt_scores.txt", "r") as f:
-        opt_scores = np.loadtxt(f)
+    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_opt_scores.npy", "rb") as f:
+        opt_scores = np.load(f)
 except FileNotFoundError:
     opt_mols = [Chem.MolFromSmiles(smile) for smile in opt_smiles]
     opt_fps = [Chem.RDKFingerprint(mol) for mol in opt_mols]
@@ -40,8 +39,8 @@ except FileNotFoundError:
             score = DataStructs.FingerprintSimilarity(opt_fps[i], opt_fps[j], metric=DataStructs.TanimotoSimilarity)
             opt_scores[i, j] = score
             opt_scores[j, i] = score
-    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_opt_scores.txt", "w") as file:
-        np.savetxt(file, opt_scores)
+    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_opt_scores.npy", "wb") as file:
+        np.save(file, opt_scores)
 
 meta_smiles = []
 try:
@@ -67,8 +66,8 @@ except FileNotFoundError:
 
 
 try:
-    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_meta_scores.txt", "r") as f:
-        meta_scores = np.loadtxt(f)
+    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_meta_scores.npy", "rb") as f:
+        meta_scores = np.load(f)
 except FileNotFoundError:
     meta_mols = [Chem.MolFromSmiles(smile) for smile in meta_smiles]
     meta_fps = [Chem.RDKFingerprint(mol) for mol in meta_mols]
@@ -78,8 +77,8 @@ except FileNotFoundError:
             score = DataStructs.FingerprintSimilarity(meta_fps[i], meta_fps[j], metric=DataStructs.TanimotoSimilarity)
             meta_scores[i, j] = score
             meta_scores[j, i] = score
-    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_meta_scores.txt", "w") as file:
-        np.savetxt(file, meta_scores)
+    with open("/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/all_meta_scores.npy", "wb") as file:
+        np.save(file, meta_scores)
 
 ani_smiles = []
 try:
@@ -97,8 +96,8 @@ except FileNotFoundError:
         json.dump(ani_smiles, file)
 
 try:
-    with open("/mnt/sdb1/adriscoll/ani1x-data/all_ani_scores.txt", "r") as f:
-        ani_scores = np.loadtxt(f)
+    with open("/mnt/sdb1/adriscoll/ani1x-data/all_ani_scores.npy", "rb") as f:
+        ani_scores = np.load(f)
 except FileNotFoundError:
     ani_mols = [Chem.MolFromSmiles(smile) for smile in ani_smiles]
     ani_fps = [Chem.RDKFingerprint(mol) for mol in ani_mols]
@@ -108,8 +107,8 @@ except FileNotFoundError:
             score = DataStructs.FingerprintSimilarity(ani_fps[i], ani_fps[j], metric=DataStructs.TanimotoSimilarity)
             ani_scores[i, j] = score
             ani_scores[j, i] = score
-    with open("/mnt/sdb1/adriscoll/ani1x-data/all_ani_scores.txt", "w") as file:
-        np.savetxt(file, ani_scores)
+    with open("/mnt/sdb1/adriscoll/ani1x-data/all_ani_scores.npy", "wb") as file:
+        np.save(file, ani_scores)
 
 gdb9_smiles = []
 try:
@@ -123,8 +122,8 @@ except FileNotFoundError:
         json.dump(gdb9_smiles, file)
 
 try:
-    with open("/mnt/sdb1/adriscoll/gdb9-data/all_gdb9_scores.txt", "r") as f:
-        gdb9_scores = np.loadtxt(f)
+    with open("/mnt/sdb1/adriscoll/gdb9-data/all_gdb9_scores.npy", "rb") as f:
+        gdb9_scores = np.load(f)
 except FileNotFoundError:
     gdb9_mols = [Chem.MolFromSmiles(smile) for smile in gdb9_smiles]
     gdb9_fps = [Chem.RDKFingerprint(mol) for mol in gdb9_mols]
@@ -134,6 +133,6 @@ except FileNotFoundError:
             score = DataStructs.FingerprintSimilarity(gdb9_fps[i], gdb9_fps[j], metric=DataStructs.TanimotoSimilarity)
             gdb9_scores[i, j] = score
             gdb9_scores[j, i] = score
-    with open("/mnt/sdb1/adriscoll/gdb9-data/all_gdb9_scores.txt", "w") as file:
-        np.savetxt(file, gdb9_scores)
+    with open("/mnt/sdb1/adriscoll/gdb9-data/all_gdb9_scores.npy", "wb") as file:
+        np.save(file, gdb9_scores)
 

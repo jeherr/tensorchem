@@ -7,7 +7,7 @@ import glob
 
 
 def get_min_geom(geometries):
-    energies = [geom.labels['potential'][0] for geom in geometries]
+    energies = [geom.labels['potential'][0].export_json()[-1] for geom in geometries]
     return geometries[energies.index(min(energies))]
 
 

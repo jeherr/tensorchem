@@ -8,8 +8,7 @@ from typing import List, Tuple, Optional
 
 from ase.data import chemical_symbols
 
-from .labels import Potential, Forces, Dipole, Quadrupole, Charge
-
+from tensorchem.dataset.labels import Potential, Forces, Dipole, Quadrupole, Charge
 
 class MoleculeSet:
     def __init__(self, atoms: Tuple['Atom', ...] = None):
@@ -139,7 +138,7 @@ class Geometry:
             label_type = description[0]
             functional = description[-2]
             basis = description[-1]
-            if label_type == "potential":
+            if label_type == "potential" or label_type == "energy":
                 value = float(value)
                 mol_label = Potential(value, functional, basis)
             elif label_type == "dipole":
@@ -149,7 +148,20 @@ class Geometry:
                 value = tuple(value)
                 mol_label = Quadrupole(value, functional, basis)
             else:
-                raise RuntimeError(f"No label type know for {label_type}")
+                functional = description[0]
+                label_type = description[-1]
+                basis = description[-2]
+                if label_type == "potential" or label_type == "energy":
+                    value = float(value)
+                    mol_label = Potential(value, functional, basis)
+                elif label_type == "dipole":
+                    value = tuple(value)
+                    mol_label = Dipole(value, functional, basis)
+                elif label_type == "quadrupole":
+                    value = tuple(value)
+                    mol_label = Quadrupole(value, functional, basis)
+                else:
+                    raise RuntimeError(f"No label type know for {label_type}")
             if label_type in self.labels.keys():
                 self.labels[label_type].append(mol_label)
             else:
@@ -213,15 +225,26 @@ class Atom:
             label_type = description[0]
             functional = description[-2]
             basis = description[-1]
-            if label_type == "forces":
+            if label_type == "forces" or label_type == "gradients":
                 value = tuple(value)
                 atom_label = Forces(value, functional, basis)
-            elif label_type == "charge":
+            elif label_type == "charge" or label_type == "charges" or label_type == "mulliken_charges":
                 value = float(value)
                 partitioning = description[1]
                 atom_label = Charge(value, partitioning, functional, basis)
             else:
-                raise RuntimeError(f"No label type know for {label_type}")
+                functional = description[0]
+                label_type = description[-1]
+                basis = description[-2]
+                if label_type == "forces" or label_type == "gradients":
+                    value = tuple(value)
+                    atom_label = Forces(value, functional, basis)
+                elif label_type == "charge" or label_type == "charges" or label_type == "mulliken_charges":
+                    value = float(value)
+                    partitioning = description[1]
+                    atom_label = Charge(value, partitioning, functional, basis)
+                else:
+                    raise RuntimeError(f"No label type know for {label_type}")
             if label_type in self.labels.keys():
                 self.labels[label_type].append(atom_label)
             else:
@@ -236,3 +259,4 @@ class Atom:
         return {"atomic_num": self.at_num,
                 "xyz": self.xyz,
                 "labels": labels_dict}
+
