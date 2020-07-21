@@ -1,7 +1,7 @@
 import glob
 import os
 from ase.data import atomic_numbers
-from tensorchem.dataset.molecule import MoleculeSet, Geometry, Atom
+from tensorchem.molecules.molecule import MoleculeSet, Geometry, Atom
 
 
 def parse_aimd_input(f):
@@ -538,4 +538,4 @@ def collect_opt_data():
 #collect_aimd_data()
 #collect_meta_less50_data()
 #collect_meta_data()
-#collect_opt_data()
+collect_opt_data()

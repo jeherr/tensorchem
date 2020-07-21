@@ -1,8 +1,6 @@
-from tensorchem.dataset.molecule import MoleculeSet as MSet
+from tensorchem.molecules.molecule import MoleculeSet as MSet
 from tensorchem.util.xyz2mol import geom_to_smiles
 from multiprocessing import Pool
-from functools import partial
-import json
 import glob
 
 def mset_to_smiles(filename):

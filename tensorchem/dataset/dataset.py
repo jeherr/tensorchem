@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset as TorchDataset
-from tensorchem.dataset.molecule import MoleculeSet
+from tensorchem.molecules import Molecule
 
 
 class Dataset(TorchDataset):
@@ -93,7 +93,7 @@ class MolDataset(Dataset):
 
     @classmethod
     def from_mset(cls, msets):
-        if type(msets) is MoleculeSet:
+        if type(msets) is Molecule:
             msets = [msets]
         mol_data = cls()
         for mset in msets:
@@ -168,7 +168,7 @@ class MixedDataset(Dataset):
 
     @classmethod
     def from_mset(cls, msets):
-        if type(msets) is MoleculeSet:
+        if type(msets) is Molecule:
             msets = [msets]
         mixed_data = cls()
         for mset in msets:
@@ -194,17 +194,3 @@ class Sample:
                 self.labels.update({key: torch.FloatTensor([value])})
             else:
                 self.labels.update({key: torch.FloatTensor(value)})
-
-
-if __name__ == "__main__":
-    mol1, mol2, mds1 = MoleculeSet(), MoleculeSet(), MolDataset()
-    mol1.filename = '/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/meta/15309.mset'
-    mol2.filename = '/mnt/sdb1/adriscoll/chemspider_data/expanded_msets/meta/40036.mset'
-    mol1.load(), mol2.load()
-    ds1 = MixedDataset.from_mset([mol1, mol2])
-    #mds1 = MolDataset.from_mset([mol1, mol2])
-    #ds1 = MixedDataset()
-    #ds1.filename = 'test.mset'
-    #ds1.load()
-    mds1.load('test1.mset')
-    print(mds1.__len__())

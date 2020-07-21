@@ -1,12 +1,9 @@
-from tensorchem.dataset.molecule import MoleculeSet as MSet
+from tensorchem.molecules.molecule import MoleculeSet as MSet
 import glob
 from multiprocessing import Pool
-import time
 import copy
 import itertools
-from functools import partial 
-
-from rdkit.Chem import rdmolops
+from functools import partial
 
 try:
     from rdkit.Chem import rdEHTTools  # requires RDKit 2019.9.1 or later
@@ -20,7 +17,7 @@ import numpy as np
 import networkx as nx
 
 from rdkit import Chem
-from rdkit.Chem import AllChem, rdmolops
+from rdkit.Chem import AllChem
 
 global __ATOM_LIST__
 __ATOM_LIST__ = \

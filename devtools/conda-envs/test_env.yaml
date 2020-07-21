@@ -8,8 +8,7 @@ dependencies:
   - numpy
   - pytorch
   - ase
-  - rdkit
-  - networkx
+  - qcelemental
     # Testing
   - pytest
   - pytest-cov

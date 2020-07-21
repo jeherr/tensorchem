@@ -1,7 +1,6 @@
 import glob
-import os
 import json
-from tensorchem.dataset.molecule import MoleculeSet
+from tensorchem.molecules.molecule import MoleculeSet
 
 meta_natoms = {}
 opt_natoms = {}

@@ -595,7 +595,7 @@ def geom_to_mol(geom, charge, allow_charged_fragments=True, use_graph=True, use_
     # Get atom connectivity (AC) matrix, list of atomic numbers, molecular charge,
     # and mol object with no connectivity information
     atoms = [atom.at_num for atom in geom.atoms]
-    AC, mol = xyz_to_connectivity(atoms, geom.coords, charge, use_huckel=use_huckel)
+    AC, mol = xyz_to_connectivity(atoms, geom.xyz, charge, use_huckel=use_huckel)
 
     # Convert AC to bond order matrix and add connectivity and charge info to
     # mol object

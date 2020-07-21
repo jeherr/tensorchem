@@ -7,7 +7,7 @@ functional theory properties for molecules. Sci Data 7, 134 (2020). https://doi.
 import h5py
 import numpy as np
 
-from tensorchem.dataset.molecule import MoleculeSet, Atom
+from tensorchem.molecules.molecule import MoleculeSet, Atom
 
 
 def iter_data_buckets(h5filename, keys):

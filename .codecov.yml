@@ -6,7 +6,7 @@ coverage:
       default: false
       tests:
         target: auto
-        threshold: 10%
+        threshold: 15%
 comment:
   layout: "header"
   require_changes: false
@@ -14,3 +14,5 @@ comment:
   behavior: default
   flags: null
   paths: null
+ignore:
+  - "tensorchem/util/xyz2mol.py"

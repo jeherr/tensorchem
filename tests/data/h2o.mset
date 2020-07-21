@@ -1,1 +1,19 @@
-{"atoms": [{"atomic_num": 8, "xyz": [null, null, null], "labels": {}}, {"atomic_num": 1, "xyz": [null, null, null], "labels": {}}, {"atomic_num": 1, "xyz": [null, null, null], "labels": {}}], "trajectories": {"random": [{"atoms": [{"atomic_num": 8, "xyz": [0, 0, 0.1177], "labels": {"charge.mulliken.wb97x-d.6-311gss": -0.486}}, {"atomic_num": 1, "xyz": [0, 0.7549, -0.4709], "labels": {"charge.mulliken.wb97x-d.6-311gss": 0.243}}, {"atomic_num": 1, "xyz": [0, -0.7549, -0.4709], "labels": {"charge.mulliken.wb97x-d.6-311gss": 0.243}}], "labels": {"potential.wb97x-d.6-311gss": -76.423353}}, {"atoms": [{"atomic_num": 8, "xyz": [0, 0, 0.1177], "labels": {"charge.mulliken.wb97x-d.6-311gss": -0.486}}, {"atomic_num": 1, "xyz": [0, 0.7549, -0.4709], "labels": {"charge.mulliken.wb97x-d.6-311gss": 0.243}}, {"atomic_num": 1, "xyz": [0, -0.7549, -0.4709], "labels": {"charge.mulliken.wb97x-d.6-311gss": 0.243}}], "labels": {"potential.wb97x-d.6-311gss": -76.423353}}]}, "identifiers": {"names": ["water"]}}
+{"atoms": [8, 1, 1], "charge": 0,
+"trajectories": [{"geometries": [{
+                                   "atoms": [8, 1, 1],
+                                   "xyz": [[0.0, 0.0, 0.1177],
+                                           [0.0, 0.7549, -0.4709],
+                                           [0.0, -0.7549, -0.4709]],
+                                   "labels": {
+                                     "potential.wb97x-d.6-311gss": -76.423353,
+                                     "charge.mulliken.wb97x-d.6-311gss": [-0.486, 0.243, 0.243]
+                                   }
+                                 }]
+                  }],
+"identifiers": {
+                 "names": ["water"],
+                 "smiles": ["O"]
+               },
+"filename": "h20.mset",
+"filepath": "./tests/data"
+}

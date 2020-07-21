@@ -1,70 +1,60 @@
-import tensorchem
 import pytest
+import os
+import json
+from tensorchem.molecules import *
 
-from tensorchem.dataset.molecule import MoleculeSet, Geometry, Atom
-
-pytest.mset = MoleculeSet()
-pytest.mset.load('tests/data/h2o.mset')
-
-
-# MoleculeSet tests
-def test_geom_MoleculeSet():
-    for geom in pytest.mset.geometries:
-        assert type(geom) == tensorchem.dataset.molecule.Geometry
+mol = Molecule.from_json(json.load(open(os.path.join(os.getcwd(),'tests/data/h2o.mset'), "r")))
 
 
-def test_len_MoleculeSet():
-    assert pytest.mset.__len__() == 2
+# Molecule tests
+def test_geom_Molecule():
+    for geom in mol.geometries:
+        assert type(geom) == Geometry
 
 
-def test_n_atoms_MoleculeSet():
-    assert pytest.mset.n_atoms == 3
+def test_len_Molecule():
+    assert mol.__len__() == 1
 
 
-def test_at_nums_MoleculeSet():
-    assert pytest.mset.at_nums == (8, 1, 1)
+def test_n_atoms_Molecule():
+    assert mol.n_atoms == 3
 
 
-def test_at_symbs_MoleculeSet():
-    assert pytest.mset.at_symbs == ('O', 'H', 'H')
+def test_n_heavy_atoms_Molecule():
+    assert mol.n_heavy_atoms == 1
 
 
-def test_isomer_MoleculeSet():
-    assert pytest.mset.is_isomer(pytest.mset)
+def test_at_nums_Molecule():
+    assert mol.atoms.tolist() == [8, 1, 1]
 
 
-def test_getitem_MoleculeSet():
-    assert pytest.mset.__getitem__(1).n_atoms == 3
+def test_at_symbs_Molecule():
+    assert mol.at_symbs == ['O', 'H', 'H']
 
 
-def test_save_MoleculeSet():
-    pytest.mset.save()
+def test_getitem_Molecule():
+    geom = mol[0]
+    assert geom.n_atoms == mol.n_atoms
+    assert geom.n_heavy_atoms == mol.n_heavy_atoms
+    assert geom.at_symbs == mol.at_symbs
+    assert set(geom.elements.tolist()) == set(mol.elements.tolist())
+
+
+def test_save_Molecule():
+    mol.save()
 
 
 # Geometry tests
 def test_Geometry():
-    for geom in pytest.mset.geometries:
+    for geom in mol.geometries:
         assert geom.n_atoms != 0 and type(geom.labels) == dict
 
 
 def test_rep_Geometry():
-    for geom in pytest.mset.geometries:
-        assert type(geom.__repr__()) == str
+    for geom in mol.geometries:
+        assert type(repr(geom)) == str
 
 
 def test_export_json_Geometry():
-    for geom in pytest.mset.geometries:
-        assert list(geom.export_json().keys()) == ['atoms', 'labels']
-
-
-# Atom tests
-def test_xyz_Atom():
-    pytest.mset.atoms = [atom for geom in pytest.mset.geometries for atom in geom.atoms]
-    for atom in pytest.mset.atoms:
-        assert atom.xyz == (atom.x, atom.y, atom.z)
-
-
-def test_export_json_Atom():
-    pytest.mset.atoms = [atom for geom in pytest.mset.geometries for atom in geom.atoms]
-    for atom in pytest.mset.atoms:
-        assert list(atom.export_json().keys()) == ['atomic_num', 'xyz', 'labels']
+    for geom in mol.geometries:
+        assert set(geom.to_json().keys()) == {'atoms', 'xyz', 'labels'}
