@@ -41,21 +41,6 @@ def test_save_MoleculeSet():
     pytest.mset.save()
 
 
-def test_buildgeoms_MoleculeSet():
-    geom = pytest.mset[0]
-    coords = geom.coords
-    mol_labels = geom.labels
-    atom_label_keys = geom.atoms[0].labels.keys()
-    atom_labels = {key: tuple(atom.labels[key] for atom in geom.atoms) for key in atom_label_keys}
-    new_geom = pytest.mset.build_geom(coords, mol_labels, atom_labels)
-    assert geom.labels == new_geom.labels
-    for atom1, atom2 in zip(geom.atoms, new_geom.atoms):
-        assert atom1.at_num == atom2.at_num
-        assert atom1.xyz == atom2.xyz
-        assert atom1.labels == atom2.labels
-
-
-
 # Geometry tests
 def test_Geometry():
     for geom in pytest.mset.geometries:

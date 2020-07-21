@@ -8,10 +8,13 @@ from typing import List, Tuple, Optional
 
 from ase.data import chemical_symbols
 
+from .labels import Potential, Forces, Dipole, Quadrupole, Charge
+
 
 class MoleculeSet:
     def __init__(self, atoms: Tuple['Atom', ...] = None):
         self.atoms = atoms
+        self.formal_charge = None
         self.trajectories = {}
         self.identifiers = {}
         self.min_geom = None
@@ -20,16 +23,8 @@ class MoleculeSet:
     def __len__(self) -> int:
         return len(self.geometries)
 
-    def __getitem__(self, idx: int) -> List[List[int]]:
+    def __getitem__(self, idx: int) -> 'Geometry':
         return self.geometries[idx]
-
-    def __hash__(self) -> hash(tuple):
-        return hash(tuple([atom.at_num for atom in self.atoms]))
-
-    def compare_hash(self, other: 'MoleculeSet') -> bool:
-        if isinstance(other, MoleculeSet):
-            return self.__hash__() == other.__hash__()
-        return NotImplemented
 
     def is_isomer(self, other: 'MoleculeSet') -> bool:
         if isinstance(other, MoleculeSet):
@@ -47,7 +42,7 @@ class MoleculeSet:
         return formula
 
     @property
-    def geometries(self) -> Tuple[List[List[int]]]:
+    def geometries(self) -> List['Geometry']:
         return [geom for value in self.trajectories.values() for geom in value]
 
     @property
@@ -59,37 +54,12 @@ class MoleculeSet:
         return tuple([chemical_symbols[atom.at_num] for atom in self.atoms])
 
     @property
-    def elements(self) -> Tuple[str, ...]:
-        return tuple([set([self.at_symbs])])
+    def elements(self) -> set:
+        return set([self.at_symbs])
 
     @property
     def n_atoms(self) -> int:
         return len(self.atoms)
-
-    @property
-    def get_min_geom(self) -> 'Geometry':
-        try:
-            energies = [geom.labels['wb97x-d.6-311gss.energy'] for geom in self.geometries]
-        except:
-            try:
-                energies = [geom.labels['wB97X-D.6-311g**.potential'] for geom in self.geometries]
-            except:
-                try:
-                    energies = [geom.labels['wb97x_tz.energy'] for geom in self.geometries]
-                except:
-                    return self.geometries[0]
-        return self.geometries[energies.index(min(energies))]
-
-    def build_geom(self, coords: list, mol_labels: dict, atom_labels: dict) -> 'Geometry':
-        geom_atoms = tuple([Atom(atom.at_num) for atom in self.atoms])
-        for i, atom in enumerate(geom_atoms):
-            atom.xyz = (coords[i][0], coords[i][1], coords[i][2])
-        for key, label in atom_labels.items():
-            for i, atom in enumerate(geom_atoms):
-                atom.labels[key] = label[i]
-        geom = Geometry(geom_atoms)
-        geom.labels = mol_labels
-        return geom
 
     def save(self, filename: str = None):
         if filename is None:
@@ -129,9 +99,9 @@ class MoleculeSet:
 class Geometry:
     def __init__(self, atoms: List['Atom'] = None, labels: dict = None):
         self.atoms = atoms
-        if labels is None:
-            labels = {}
-        self.labels = labels
+        self.labels = {}
+        if labels is not None:
+            self.add_labels(labels)
 
     def __repr__(self) -> str:
         # TODO add some of that fancy printing crap to make this print the xyz in a nicer format
@@ -162,12 +132,39 @@ class Geometry:
     def from_json(cls, json_data: dict) -> 'Geometry':
         new_geom = cls()
         new_geom.atoms = tuple([Atom.from_json(atom_data) for atom_data in json_data['atoms']])
-        new_geom.labels = json_data['labels']
+        new_geom.add_labels(json_data['labels'])
         return new_geom
 
+    def add_labels(self, mol_labels: list):
+        for key, value in mol_labels.items():
+            description = key.split('.')
+            label_type = description[0]
+            functional = description[-2]
+            basis = description[-1]
+            if label_type == "potential":
+                value = float(value)
+                mol_label = Potential(value, functional, basis)
+            elif label_type == "dipole":
+                value = tuple(value)
+                mol_label = Dipole(value, functional, basis)
+            elif label_type == "quadrupole":
+                value = tuple(value)
+                mol_label = Quadrupole(value, functional, basis)
+            else:
+                raise RuntimeError(f"No label type know for {label_type}")
+            if label_type in self.labels.keys():
+                self.labels[label_type].append(mol_label)
+            else:
+                self.labels[label_type] = [mol_label]
+
     def export_json(self) -> dict:
+        labels_dict = {}
+        for key, value in self.labels.items():
+            for label in value:
+                ke, val = label.export_json()
+                labels_dict[ke] = val
         return {"atoms": [atom.export_json() for atom in self.atoms],
-                "labels": self.labels}
+                "labels": labels_dict}
 
     def write_xyz(self, filename: str) -> None:
         with open(filename, "w") as f:
@@ -204,10 +201,37 @@ class Atom:
             new_atom.xyz = (None, None, None)
         else:
             new_atom.xyz = tuple(json_data['xyz'])
-        new_atom.labels = json_data['labels']
+        new_atom.add_labels(json_data['labels'])
         return new_atom
 
+    def add_labels(self, atom_labels: dict):
+        for key, value in atom_labels.items():
+            if key == 'atomic_num' or key == 'xyz':
+                continue
+            description = key.split('.')
+            label_type = description[0]
+            functional = description[-2]
+            basis = description[-1]
+            if label_type == "forces":
+                value = tuple(value)
+                atom_label = Forces(value, functional, basis)
+            elif label_type == "charge":
+                value = float(value)
+                partitioning = description[1]
+                atom_label = Charge(value, partitioning, functional, basis)
+            else:
+                raise RuntimeError(f"No label type know for {label_type}")
+            if label_type in self.labels.keys():
+                self.labels[label_type].append(atom_label)
+            else:
+                self.labels[label_type] = [atom_label]
+
     def export_json(self) -> dict:
+        labels_dict = {}
+        for key, value in self.labels.items():
+            for label in value:
+                ke, val = label.export_json()
+                labels_dict[ke] = val
         return {"atomic_num": self.at_num,
                 "xyz": self.xyz,
-                "labels": self.labels}
+                "labels": labels_dict}

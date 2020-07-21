@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset as TorchDataset
-from tensorchem.dataset.molecule import MoleculeSet, Geometry
+from tensorchem.dataset.molecule import MoleculeSet
 
 
 class Dataset(TorchDataset):
