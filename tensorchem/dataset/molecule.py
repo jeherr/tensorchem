@@ -35,10 +35,10 @@ class MoleculeSet:
     def chem_formula(self):
         formula = {}
         for atom in self.atoms:
-            if atom.at_num in formula.keys():
-                formula[atom.at_num] += 1
+            if chemical_symbols[atom.at_num] in formula.keys():
+                formula[chemical_symbols[atom.at_num]] += 1
             else:
-                formula[atom.at_num] = 1
+                formula[chemical_symbols[atom.at_num]] = 1
         return formula
 
     @property
@@ -105,11 +105,9 @@ class Geometry:
 
     def __repr__(self) -> str:
         # TODO add some of that fancy printing crap to make this print the xyz in a nicer format
-        rep = str(self.n_atoms)
-        rep += "\n\n"
+        rep = f"{self.n_atoms}\n"
         for atom in self.atoms:
-            rep += "     ".join((str(atom.at_symb), str(atom.x), str(atom.y), str(atom.z)))
-            rep += "\n"
+            rep += f"\n{atom.at_symb}   {atom.x:9.6f}   {atom.y:9.6f}   {atom.z:9.6f}"
         return rep
 
     @property
@@ -180,6 +178,9 @@ class Atom:
     @property
     def at_symb(self) -> str:
         return chemical_symbols[self.at_num]
+
+    def __repr__(self) -> str:
+        return self.at_symb
 
     @property
     def x(self) -> float:
