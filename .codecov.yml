@@ -16,3 +16,4 @@ comment:
   paths: null
 ignore:
   - "tensorchem/util/xyz2mol.py"
+  - "scripts/*"
